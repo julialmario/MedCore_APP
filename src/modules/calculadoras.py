@@ -1,6 +1,11 @@
 import flet as ft
 from modules.navigation import *
 
+
+PRIMARY_COLOR = ft.Colors.BLUE_GREY_900
+SECONDARY_COLOR = ft.Colors.INDIGO_900
+TEXT_COLOR = ft.Colors.CYAN_50
+
 def imc():
     peso_field = ft.TextField(
         label="Peso (kg)",
@@ -45,13 +50,27 @@ def imc():
     peso_field.on_change = calcular_imc
     talla_field.on_change = calcular_imc
 
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+
+        # El panel está expandido si su propiedad expanded es True
+        is_expanded = panel.expanded
+
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+
+        panel.update()
+
     return ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
-        elevation=8,
-        divider_color=ft.Colors.WHITE,
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         controls=[
             ft.ExpansionPanel(
-                header=ft.ListTile(title=ft.Text("IMC",text_align=ft.TextAlign.LEFT)),
+                ref=panel_ref,
+                header=ft.ListTile(title=ft.Text("IMC"),text_color=TEXT_COLOR),
                 content=ft.Container(
                     content=ft.Column(
                         controls=[
@@ -60,15 +79,16 @@ def imc():
                             resultado_imc,
                             categoria_imc
                         ],
-                        spacing=10
+                        spacing=10,
                     ),
-                    padding=ft.padding.only(top=25,bottom=25)
+                    padding=ft.padding.symmetric(vertical=25),
                 ),
                 bgcolor=ft.Colors.BLUE_GREY_900,
                 expanded=False,
             )
         ],
     )
+
 
 def regla_de_tres():
     a_field = ft.TextField(

@@ -5,6 +5,7 @@ from modules.navigation import *
 from modules.info import *
 from modules.paraclinicos import *
 
+
 def main(page: ft.Page):
     page.title = "MedCore"
     page.theme_mode = ft.ThemeMode.DARK
