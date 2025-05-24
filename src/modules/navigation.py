@@ -31,7 +31,7 @@ def nav(page, page_change):
             ),
                 ft.NavigationDrawerDestination(
                 icon=ft.Icon(ft.Icons.ASSIGNMENT_OUTLINED),
-                label="Crear Historia clinica",
+                label="Historias clinica",
                 selected_icon=ft.Icons.ASSIGNMENT_SHARP,
             ),
             ft.NavigationDrawerDestination(

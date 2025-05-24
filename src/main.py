@@ -21,6 +21,8 @@ def main(page: ft.Page):
         load_current_page()
         page.close(drawer)
         page.update()
+
+
 #------------------------------------------------------------
     # Navigation interface
     
@@ -31,26 +33,32 @@ def main(page: ft.Page):
     def show_home():
         page.controls.clear()
         page.add(bar, view_home)
+        page.update()
 
     def show_meds():
         page.controls.clear()
         page.add(bar, ft.Text("Medicamentos"))
+        page.update()
     
     def show_cals():
         page.controls.clear()
         page.add(bar, list_content_search(calculadoras))
+        page.update()
 
     def show_labs():
         page.controls.clear()
         page.add(bar, list_content_search(paraclinicos))
+        page.update()
 
     def show_hc():
         page.controls.clear()
         page.add(bar, ft.Text("Historia clinica"))
+        page.update()
 
     def show_info():
         page.controls.clear()
         page.add(bar, info_page())
+        page.update()
 
 #-------------------------------------------------
 

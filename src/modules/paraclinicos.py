@@ -1,6 +1,10 @@
 import flet as ft
 from modules.navigation import *
 
+PRIMARY_COLOR = ft.Colors.BLUE_GREY_900
+SECONDARY_COLOR = ft.Colors.INDIGO_900
+TEXT_COLOR = ft.Colors.CYAN_50
+
 def hemograma_panel():
     rangos_por_edad = {
         "Neonatos": {
@@ -167,14 +171,37 @@ def hemograma_panel():
     grupo_selector.on_change = actualizar_edades
     edad_selector.on_change = actualizar_hemograma
 
+    # Referencias para el panel y la lista
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+
+        # Si el panel se cerró, resetea los valores y muestra solo el label
+        if not is_expanded:
+            grupo_selector.value = None  # o "" si prefieres
+            edad_selector.options = []
+            edad_selector.value = None  # o ""
+            hemograma_datos.controls.clear()
+            grupo_selector.update()
+            edad_selector.update()
+            hemograma_datos.update()
+
     return ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         elevation=8,
-        divider_color=ft.Colors.WHITE,
+        divider_color=TEXT_COLOR,
         controls=[
             ft.ExpansionPanel(
+                ref=panel_ref,
                 header=ft.ListTile(
-                    title=ft.Text("Hemograma", text_align=ft.TextAlign.LEFT)
+                    title=ft.Text("Hemograma", text_align=ft.TextAlign.LEFT, color=TEXT_COLOR),
                 ),
                 content=ft.Container(
                     content=ft.Column(
