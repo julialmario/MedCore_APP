@@ -90,8 +90,8 @@ def list_content_search(list_content):
     list_content.sort(key=lambda x: x["titulo"].lower())
 
     list_container = ft.Column(expand=True, spacing=20)
-    buscar = "Buscar parámetro..."
-    selecciona = "Selecciona un parámetro..."
+    buscar = "Buscar..."
+    selecciona = "Selecciona..."
 
     # Construcción dinámica con encabezados por letra
     def build_list(filtered_items):

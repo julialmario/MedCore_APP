@@ -218,13 +218,13 @@ def tfg_schwartz():
     resultado_texto = ft.Text(
         "TFGe: -",
         style=ft.TextThemeStyle.HEADLINE_SMALL,
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         text_align=ft.TextAlign.CENTER
     )
 
     formula_text = ft.Text(
         "Fórmula usada: TFGe = (k x Altura) / Creatinina",
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         size=14,
         text_align=ft.TextAlign.CENTER
     )
@@ -252,40 +252,52 @@ def tfg_schwartz():
     creatinina_field.on_change = calcular_tfge
     k_selector.on_change = calcular_tfge
 
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+
     return ft.ExpansionPanelList(
-    expand_icon_color=ft.Colors.WHITE,
-    elevation=8,
-    divider_color=ft.Colors.WHITE,
-    controls=[
-        ft.ExpansionPanel(
-            header=ft.ListTile(
-                title=ft.Text("TFG Ecuación de Schwartz 2009", text_align=ft.TextAlign.LEFT)
-            ),
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        ft.Row([formula_text], alignment=ft.MainAxisAlignment.CENTER),
-                        ft.Column(
-                            controls=[
-                                altura_field,
-                                creatinina_field,
-                                k_selector,
-                            ],
-                            spacing=8,  # espaciado vertical reducido
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                        ),
-                        ft.Row([resultado_texto], alignment=ft.MainAxisAlignment.CENTER)
-                    ],
-                    spacing=15,  # espaciado general más compacto
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
+        elevation=8,
+        divider_color=TEXT_COLOR,
+        controls=[
+            ft.ExpansionPanel(
+                ref=panel_ref,
+                header=ft.ListTile(
+                    title=ft.Text("TFG Ecuación de Schwartz 2009", text_align=ft.TextAlign.LEFT, color=TEXT_COLOR)
                 ),
-                padding=ft.padding.all(10)  # padding reducido
-            ),
-            bgcolor=ft.Colors.BLUE_GREY_900,
-            expanded=False,
-        )
-    ],
-)
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Row([formula_text], alignment=ft.MainAxisAlignment.CENTER),
+                            ft.Column(
+                                controls=[
+                                    altura_field,
+                                    creatinina_field,
+                                    k_selector,
+                                ],
+                                spacing=8,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                            ),
+                            ft.Row([resultado_texto], alignment=ft.MainAxisAlignment.CENTER)
+                        ],
+                        spacing=15,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                    ),
+                    padding=ft.padding.all(10)
+                ),
+                bgcolor=PRIMARY_COLOR,
+                expanded=False,
+            )
+        ],
+    )
 
 def talla_medioparental():
     tallapadre_field = ft.TextField(
@@ -317,13 +329,13 @@ def talla_medioparental():
     resultado_texto = ft.Text(
         "Talla medioparental estimada",
         style=ft.TextThemeStyle.HEADLINE_SMALL,
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         text_align=ft.TextAlign.CENTER
     )
 
     formula_text = ft.Text(
         "Fórmula usada: ((Talla madre + Talla padre) / 2) ± 6.5 cm",
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         size=14,
         text_align=ft.TextAlign.CENTER
     )
@@ -350,14 +362,26 @@ def talla_medioparental():
     tallamadre_field.on_change = calcular_talla
     k_selector.on_change = calcular_talla
 
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+
     return ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         elevation=8,
-        divider_color=ft.Colors.WHITE,
+        divider_color=TEXT_COLOR,
         controls=[
             ft.ExpansionPanel(
+                ref=panel_ref,
                 header=ft.ListTile(
-                    title=ft.Text("Talla medioparental", text_align=ft.TextAlign.LEFT)
+                    title=ft.Text("Talla medioparental", text_align=ft.TextAlign.LEFT, color=TEXT_COLOR)
                 ),
                 content=ft.Container(
                     content=ft.Column(
@@ -379,7 +403,7 @@ def talla_medioparental():
                     ),
                     padding=ft.padding.all(10)
                 ),
-                bgcolor=ft.Colors.BLUE_GREY_900,
+                bgcolor=PRIMARY_COLOR,
                 expanded=False,
             )
         ],
@@ -412,7 +436,8 @@ def slicc_page():
     resultado = ft.Text(
         "Selecciona criterios para evaluar diagnóstico.",
         size=16,
-        text_align=ft.TextAlign.CENTER
+        text_align=ft.TextAlign.CENTER,
+        color=TEXT_COLOR
     )
 
     # Listas para almacenar checkboxes
@@ -454,22 +479,34 @@ def slicc_page():
     checks_clinicos.extend([ft.Checkbox(label=c, on_change=evaluar) for c in criterios_clinicos])
     checks_inmuno.extend([ft.Checkbox(label=c, on_change=evaluar) for c in criterios_inmunologicos])
 
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+
     return ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         elevation=8,
-        divider_color=ft.Colors.WHITE,
+        divider_color=TEXT_COLOR,
         controls=[
             ft.ExpansionPanel(
+                ref=panel_ref,
                 header=ft.ListTile(
-                    title=ft.Text("Criterios SLICC para diagnóstico de LES")
+                    title=ft.Text("Criterios SLICC para diagnóstico de LES", color=TEXT_COLOR)
                 ),
                 content=ft.Container(
                     content=ft.Column(
                         controls=[
-                            ft.Text("🩺 Criterios clínicos", weight=ft.FontWeight.BOLD),
+                            ft.Text("🩺 Criterios clínicos", weight=ft.FontWeight.BOLD, color=TEXT_COLOR),
                             ft.Column(controls=checks_clinicos, spacing=4),
                             ft.Divider(),
-                            ft.Text("🧪 Criterios inmunológicos", weight=ft.FontWeight.BOLD),
+                            ft.Text("🧪 Criterios inmunológicos", weight=ft.FontWeight.BOLD, color=TEXT_COLOR),
                             ft.Column(controls=checks_inmuno, spacing=4),
                             ft.Divider(),
                             resultado
@@ -479,20 +516,19 @@ def slicc_page():
                     ),
                     padding=ft.padding.all(10)
                 ),
-                bgcolor=ft.Colors.BLUE_GREY_900,
+                bgcolor=PRIMARY_COLOR,
                 expanded=False,
             )
         ],
     )
 
 def qsofa():
-    # Switches para los 3 criterios
     switch_frecuencia = ft.Switch(value=False)
     switch_presion = ft.Switch(value=False)
     switch_estado_mental = ft.Switch(value=False)
 
-    resultado_qsofa = ft.Text("Puntuación qSOFA: -", text_align=ft.TextAlign.CENTER)
-    interpretacion_qsofa = ft.Text("Interpretación: -", text_align=ft.TextAlign.CENTER)
+    resultado_qsofa = ft.Text("Puntuación qSOFA: -", text_align=ft.TextAlign.CENTER, color=TEXT_COLOR)
+    interpretacion_qsofa = ft.Text("Interpretación: -", text_align=ft.TextAlign.CENTER, color=TEXT_COLOR)
 
     def calcular_qsofa(e):
         puntos = 0
@@ -522,7 +558,7 @@ def qsofa():
     def fila_criterio(texto, switch):
         return ft.Row(
             controls=[
-                ft.Text(texto, expand=True),
+                ft.Text(texto, expand=True, color=TEXT_COLOR),
                 switch
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -530,50 +566,45 @@ def qsofa():
             spacing=10
         )
 
-    panel = ft.ExpansionPanel(
-        header=ft.ListTile(title=ft.Text("qSOFA (Sepsis)", text_align=ft.TextAlign.LEFT)),
-        content=ft.Container(
-            content=ft.Column(
-                controls=[
-                    fila_criterio("Frecuencia respiratoria ≥ 22 rpm", switch_frecuencia),
-                    fila_criterio("Presión sistólica ≤ 100 mmHg", switch_presion),
-                    fila_criterio("Estado mental alterado (Glasgow < 15)", switch_estado_mental),
-                    resultado_qsofa,
-                    interpretacion_qsofa
-                ],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=10
-            ),
-            padding=ft.padding.symmetric(vertical=25, horizontal=100),
-            alignment=ft.alignment.center
-        ),
-        bgcolor=ft.Colors.BLUE_GREY_900,
-        expanded=False,
-    )
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
 
-    paneles = [panel]
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
 
-    def on_panel_change(e):
-        # e.control es el ExpansionPanelList
-        # e.data es el índice del panel expandido o -1 si ninguno
-        index_expandido = e.data
-        for i, p in enumerate(paneles):
-            if i == index_expandido:
-                p.bgcolor = ft.Colors.YELLOW_200  # Color cuando está expandido
-            else:
-                p.bgcolor = ft.Colors.BLUE_GREY_900  # Color cuando está cerrado
-            p.update()
-        e.control.update()
-
-    expansion_panel_list = ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
+    return ft.ExpansionPanelList(
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         elevation=8,
-        divider_color=ft.Colors.WHITE,
-        controls=paneles,
-        on_change=on_panel_change
+        divider_color=TEXT_COLOR,
+        controls=[
+            ft.ExpansionPanel(
+                ref=panel_ref,
+                header=ft.ListTile(title=ft.Text("qSOFA (Sepsis)", text_align=ft.TextAlign.LEFT, color=TEXT_COLOR)),
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            fila_criterio("Frecuencia respiratoria ≥ 22 rpm", switch_frecuencia),
+                            fila_criterio("Presión sistólica ≤ 100 mmHg", switch_presion),
+                            fila_criterio("Estado mental alterado (Glasgow < 15)", switch_estado_mental),
+                            resultado_qsofa,
+                            interpretacion_qsofa
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=10
+                    ),
+                    padding=ft.padding.symmetric(vertical=25, horizontal=100),
+                    alignment=ft.alignment.center
+                ),
+                bgcolor=PRIMARY_COLOR,
+                expanded=False,
+            )
+        ],
     )
-
-    return expansion_panel_list
 
 
 
