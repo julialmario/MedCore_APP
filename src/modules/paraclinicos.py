@@ -141,6 +141,12 @@ def hemograma_panel():
 
     def actualizar_edades(e):
         grupo = grupo_selector.value
+        if not grupo or grupo not in rangos_por_edad:
+            edad_selector.options = []
+            edad_selector.value = None
+            edad_selector.update()
+            actualizar_hemograma(None)
+            return
         edad_selector.options = [
             ft.dropdown.Option(edad) for edad in rangos_por_edad[grupo]
         ]
@@ -155,7 +161,7 @@ def hemograma_panel():
         grupo = grupo_selector.value
         edad = edad_selector.value
         hemograma_datos.controls.clear()
-        if edad and grupo:
+        if grupo and grupo in rangos_por_edad and edad and edad in rangos_por_edad[grupo]:
             for parametro, valor in rangos_por_edad[grupo][edad].items():
                 hemograma_datos.controls.append(
                     ft.Row(
@@ -167,6 +173,8 @@ def hemograma_panel():
                     )
                 )
         hemograma_datos.update()
+        grupo_selector.update()
+        edad_selector.update()
 
     grupo_selector.on_change = actualizar_edades
     edad_selector.on_change = actualizar_hemograma

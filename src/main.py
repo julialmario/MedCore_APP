@@ -10,11 +10,10 @@ def main(page: ft.Page):
     page.title = "MedCore"
     page.theme_mode = ft.ThemeMode.DARK
     page.adaptive = True
-#---------------------------------------
-    #Pagination
-    #Global Var
+
+    # Pagination
     current_page_index = 0
-    
+
     def on_navigation_change(e):
         nonlocal current_page_index
         current_page_index = e.control.selected_index
@@ -22,14 +21,10 @@ def main(page: ft.Page):
         page.close(drawer)
         page.update()
 
-
-#------------------------------------------------------------
     # Navigation interface
-    
-    bar, drawer = nav(page,on_navigation_change)
+    bar, drawer = nav(page, on_navigation_change)
 
-#---------------------------------------------------------------
-# Pages add 
+    # Pages add 
     def show_home():
         page.controls.clear()
         page.add(bar, view_home)
@@ -60,9 +55,6 @@ def main(page: ft.Page):
         page.add(bar, info_page())
         page.update()
 
-#-------------------------------------------------
-
-    # Mostrar contenido
     def load_current_page():
         if current_page_index == 0:
             show_home()
@@ -77,8 +69,7 @@ def main(page: ft.Page):
         elif current_page_index == 5:
             show_info()
 
-#--------------------------------
-# Init page
+    # Init page
     show_home()
 
 ft.app(main)

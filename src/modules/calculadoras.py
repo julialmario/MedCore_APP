@@ -55,13 +55,21 @@ def imc():
 
     def on_expand_change(e):
         panel = panel_ref.current
-
         # El panel está expandido si su propiedad expanded es True
         is_expanded = panel.expanded
-
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
-
         panel.update()
+        # Resetear campos al cerrar
+        if not is_expanded:
+            peso_field.value = ""
+            talla_field.value = ""
+            resultado_imc.value = "IMC: -"
+            categoria_imc.value = "Categoría: -"
+            peso_field.update()
+            talla_field.update()
+            resultado_imc.update()
+            categoria_imc.update()
+
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
@@ -157,6 +165,19 @@ def regla_de_tres():
         is_expanded = panel.expanded
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
         panel.update()
+        if not is_expanded:
+            a_field.value = ""
+            b_field.value = ""
+            y_field.value = ""
+            resultado_x.value = "X"
+            resultado_valor.value = "X: -"
+            formula_text.value = "Fórmula usada: X = (Y × B) / A"
+            a_field.update()
+            b_field.update()
+            y_field.update()
+            resultado_x.update()
+            resultado_valor.update()
+            formula_text.update()
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
@@ -279,6 +300,17 @@ def tfg_schwartz():
         is_expanded = panel.expanded
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
         panel.update()
+        if not is_expanded:
+            altura_field.value = ""
+            creatinina_field.value = ""
+            k_selector.value = "Término k = 0.33"
+            resultado_texto.value = "TFGe: -"
+            formula_text.value = "Fórmula usada: TFGe = (k x Altura) / Creatinina"
+            altura_field.update()
+            creatinina_field.update()
+            k_selector.update()
+            resultado_texto.update()
+            formula_text.update()
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
@@ -389,6 +421,17 @@ def talla_medioparental():
         is_expanded = panel.expanded
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
         panel.update()
+        if not is_expanded:
+            tallapadre_field.value = ""
+            tallamadre_field.value = ""
+            k_selector.value = "Niño k = +6.5cm"
+            resultado_texto.value = "Talla medioparental estimada"
+            formula_text.value = "Fórmula usada: ((Talla madre + Talla padre) / 2) ± 6.5 cm"
+            tallapadre_field.update()
+            tallamadre_field.update()
+            k_selector.update()
+            resultado_texto.update()
+            formula_text.update()
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
@@ -506,6 +549,13 @@ def slicc_page():
         is_expanded = panel.expanded
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
         panel.update()
+        if not is_expanded:
+            for c in checks_clinicos + checks_inmuno:
+                c.value = False
+                c.update()
+            resultado.value = "Selecciona criterios para evaluar diagnóstico."
+            resultado.color = TEXT_COLOR
+            resultado.update()
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
@@ -593,6 +643,17 @@ def qsofa():
         is_expanded = panel.expanded
         panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
         panel.update()
+        if not is_expanded:
+            switch_frecuencia.value = False
+            switch_presion.value = False
+            switch_estado_mental.value = False
+            resultado_qsofa.value = "Puntuación qSOFA: -"
+            interpretacion_qsofa.value = "Interpretación: -"
+            switch_frecuencia.update()
+            switch_presion.update()
+            switch_estado_mental.update()
+            resultado_qsofa.update()
+            interpretacion_qsofa.update()
 
     return ft.ExpansionPanelList(
         ref=panel_list_ref,
