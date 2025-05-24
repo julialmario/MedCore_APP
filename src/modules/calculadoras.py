@@ -100,25 +100,28 @@ def regla_de_tres():
     y_field = ft.TextField(
         hint_text="Y", keyboard_type=ft.KeyboardType.NUMBER, width=80, text_align=ft.TextAlign.CENTER
     )
-    resultado_x = ft.Text("X", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE, size=20, text_align=ft.TextAlign.CENTER)
+    resultado_x = ft.Text("X", weight=ft.FontWeight.BOLD, color=TEXT_COLOR, size=20, text_align=ft.TextAlign.CENTER)
 
-    enter = ft.Text("", weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER,size=0 ,text_align=ft.TextAlign.CENTER)
-    
+    enter = ft.Text("", weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER, size=0, text_align=ft.TextAlign.CENTER)
+
     formula_text = ft.Text(
         "Fórmula usada: X = (Y × B) / A",
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         size=14,
         text_align=ft.TextAlign.CENTER
     )
     resultado_valor = ft.Text(
         "X: -",
         style=ft.TextThemeStyle.HEADLINE_SMALL,
-        color=ft.Colors.WHITE,
+        color=TEXT_COLOR,
         text_align=ft.TextAlign.CENTER
     )
 
     def calcular_regla_de_tres(e):
         try:
+            if not a_field.value or not b_field.value or not y_field.value:
+                raise ValueError("Faltan valores")
+
             a = float(a_field.value)
             b = float(b_field.value)
             y = float(y_field.value)
@@ -134,22 +137,37 @@ def regla_de_tres():
             resultado_x.value = "X"
             resultado_valor.value = "X: Valor inválido"
             formula_text.value = "Fórmula usada: X = (Y x B) / A"
-
-        resultado_x.update()
-        resultado_valor.update()
-        formula_text.update()
+        finally:
+            if resultado_x.page:
+                resultado_x.update()
+            if resultado_valor.page:
+                resultado_valor.update()
+            if formula_text.page:
+                formula_text.update()
 
     a_field.on_change = calcular_regla_de_tres
     b_field.on_change = calcular_regla_de_tres
     y_field.on_change = calcular_regla_de_tres
 
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+    panel_list_ref = ft.Ref[ft.ExpansionPanelList]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+
     return ft.ExpansionPanelList(
-        expand_icon_color=ft.Colors.WHITE,
+        ref=panel_list_ref,
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
         elevation=8,
-        divider_color=ft.Colors.WHITE,
+        divider_color=TEXT_COLOR,
         controls=[
             ft.ExpansionPanel(
-                header=ft.ListTile(title=ft.Text("Regla de tres (Directa)", text_align=ft.TextAlign.LEFT)),
+                ref=panel_ref,
+                header=ft.ListTile(title=ft.Text("Regla de tres (Directa)", text_align=ft.TextAlign.LEFT, color=TEXT_COLOR)),
                 content=ft.Container(
                     content=ft.Column(
                         controls=[
@@ -163,7 +181,7 @@ def regla_de_tres():
                                         spacing=4
                                     ),
                                     ft.Container(
-                                        content=ft.Text(" = ", size=25),
+                                        content=ft.Text(" = ", size=25, color=TEXT_COLOR),
                                         alignment=ft.alignment.center
                                     ),
                                     ft.Column(
@@ -182,11 +200,12 @@ def regla_de_tres():
                     ),
                     padding=ft.padding.only(bottom=25)
                 ),
-                bgcolor=ft.Colors.BLUE_GREY_900,
+                bgcolor=PRIMARY_COLOR,
                 expanded=False,
             )
         ],
     )
+
 
 def tfg_schwartz():
     altura_field = ft.TextField(
@@ -607,14 +626,16 @@ def qsofa():
     )
 
 
-
-#{"titulo": "Regla de tres (Directa)","tags": ["proporciones", "aritmética", "matemática"],"componente": regla_de_tres()},
-
 calculadoras = [
         {
             "titulo": "Indice de masa corporal",
             "tags": ["imc", "peso", "altura", "nutrición", "bmi"],
             "componente": imc()
+        },
+        {
+            "titulo": "Regla de tres (Directa)",
+            "tags": ["proporciones", "aritmética", "matemática"],
+            "componente": regla_de_tres()
         },
         {
             "titulo": "Talla medio parental",
