@@ -1,0 +1,84 @@
+import flet as ft
+import webbrowser
+
+def info_page():
+    def web(e):
+        webbrowser.open("https://julian-almario.github.io/")
+
+    my_web = ft.GestureDetector(
+        content=ft.Image(
+            src="../assets/myweb.png",
+            width=150,
+            height=50,
+        ),
+        on_tap=web,
+    )
+    
+    def repository(e):
+        webbrowser.open("https://github.com/Julian-Almario/MedCore_APP")
+
+    repositorio = ft.GestureDetector(
+        content=ft.Image(
+            src="../assets/repository.png",
+            width=150,
+            height=50,
+        ),
+        on_tap=repository,
+    )
+
+    images_row = ft.Row(
+        controls=[my_web, repositorio],
+        alignment=ft.MainAxisAlignment.CENTER,
+        spacing=20
+    )
+    creador_info = ft.Column(
+        controls=[
+            ft.Text("MedCore", size=20, weight=ft.FontWeight.BOLD),
+            ft.Text("Created by Julian Almario Loaiza", size=18),
+            images_row,
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    )
+
+    referencias = [
+        "- Huerta Aragonés J, Cela de Julián E. Hematología práctica: interpretación del hemograma y de las pruebas de coagulación. En: AEPap (ed.). Curso de Actualización Pediatría 2018. Madrid: Lúa Ediciones 3.0; 2018. p. 507-526."
+    ]
+
+    referencias_panel = ft.ExpansionPanelList(
+        expand_icon_color=ft.Colors.WHITE,
+        elevation=8,
+        divider_color=ft.Colors.WHITE,
+        controls=[
+            ft.ExpansionPanel(
+                header= ft.ListTile(
+                    title=ft.Text("📚 Referencias bibliográficas", text_align=ft.TextAlign.LEFT)
+                ),
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[ft.Text(ref, size=14) for ref in referencias],
+                        spacing=6
+                    ),
+                padding=ft.padding.all(20)
+                    ),
+                expanded=False,
+                bgcolor=ft.Colors.BLUE_GREY_900,
+            )
+        ]
+    )
+
+    return ft.Container(
+        content=ft.Column(
+            controls=[
+                creador_info,
+                ft.Divider(thickness=1),
+                referencias_panel,
+            ],
+            spacing=30,
+            scroll=ft.ScrollMode.AUTO,
+            height=True,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        padding=ft.padding.all(20),
+        expand=True
+    )
+
