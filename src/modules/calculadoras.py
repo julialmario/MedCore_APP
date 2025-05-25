@@ -765,7 +765,7 @@ def sofa_score():
         controls=[
             ft.ExpansionPanel(
                 ref=panel_ref,
-                header=ft.ListTile(title=ft.Text("SOFA Score (Sepsis)", color=TEXT_COLOR)),
+                header=ft.ListTile(title=ft.Text("SOFA Score (Sepsis)", color=TEXT_COLOR),subtitle=ft.Text("Evaluación de disfunción orgánica", color=TEXT_COLOR)),
                 content=ft.Container(
                     content=ft.Column(
                         controls=list(selectores.values()) + [resultado_sofa, interpretacion_sofa],
@@ -780,6 +780,164 @@ def sofa_score():
             )
         ],
     )
+
+def ckd_epi_2021():
+    sexo = ft.Dropdown(
+        label="Sexo",
+        options=[ft.dropdown.Option("Masculino"), ft.dropdown.Option("Femenino")],
+        width=200
+    )
+
+    edad = ft.TextField(label="Edad (años)", keyboard_type=ft.KeyboardType.NUMBER, width=200)
+    creatinina = ft.TextField(label="Creatinina (mg/dL)", keyboard_type=ft.KeyboardType.NUMBER, width=200)
+
+    resultado_ckd = ft.Text("eGFR (CKD-EPI 2021): -", text_align=ft.TextAlign.CENTER, color=TEXT_COLOR)
+    interpretacion_ckd = ft.Text("Clasificación: -", text_align=ft.TextAlign.CENTER, color=TEXT_COLOR)
+
+    tabla_clasificacion = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("Categoría", color=TEXT_COLOR)),
+            ft.DataColumn(ft.Text("eGFR (mL/min/1.73m²)", color=TEXT_COLOR)),
+            ft.DataColumn(ft.Text("Descripción", color=TEXT_COLOR)),
+        ],
+        rows=[
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G1", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("≥ 90", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Función renal normal", color=TEXT_COLOR)),
+            ]),
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G2", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("60–89", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Disminución leve", color=TEXT_COLOR)),
+            ]),
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G3a", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("45–59", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Disminución leve-moderada", color=TEXT_COLOR)),
+            ]),
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G3b", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("30–44", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Disminución moderada-severa", color=TEXT_COLOR)),
+            ]),
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G4", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("15–29", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Disminución severa", color=TEXT_COLOR)),
+            ]),
+            ft.DataRow(cells=[
+                ft.DataCell(ft.Text("G5", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("< 15", color=TEXT_COLOR)),
+                ft.DataCell(ft.Text("Falla renal", color=TEXT_COLOR)),
+            ]),
+        ],
+        border=ft.border.all(1, TEXT_COLOR),
+        column_spacing=20,
+        horizontal_margin=10,
+        data_row_max_height=40,
+        heading_row_color=ft.Colors.with_opacity(0.1, TEXT_COLOR)
+    )
+
+    def calcular_ckd(e):
+        try:
+            age = float(edad.value)
+            cr = float(creatinina.value)
+            sex = sexo.value
+
+            if sex == "Femenino":
+                k = 0.7
+                alpha = -0.241
+                mult = 1.012
+            else:
+                k = 0.9
+                alpha = -0.302
+                mult = 1.0
+
+            egfr = 142 * min(cr / k, 1)**alpha * max(cr / k, 1)**-1.200 * 0.9938**age * mult
+            egfr = round(egfr, 1)
+
+            resultado_ckd.value = f"eGFR (CKD-EPI 2021): {egfr} mL/min/1.73m²"
+
+            if egfr >= 90:
+                categoria = "G1: Función normal"
+            elif egfr >= 60:
+                categoria = "G2: Leve disminución"
+            elif egfr >= 45:
+                categoria = "G3a: Disminución leve-moderada"
+            elif egfr >= 30:
+                categoria = "G3b: Disminución moderada-severa"
+            elif egfr >= 15:
+                categoria = "G4: Disminución severa"
+            else:
+                categoria = "G5: Falla renal"
+
+            interpretacion_ckd.value = f"Clasificación: {categoria}"
+
+        except:
+            resultado_ckd.value = "eGFR (CKD-EPI 2021): -"
+            interpretacion_ckd.value = "Clasificación: Datos inválidos"
+
+        resultado_ckd.update()
+        interpretacion_ckd.update()
+
+    for field in [sexo, edad, creatinina]:
+        field.on_change = calcular_ckd
+
+    panel_ref = ft.Ref[ft.ExpansionPanel]()
+
+    def on_expand_change(e):
+        panel = panel_ref.current
+        is_expanded = panel.expanded
+        panel.bgcolor = SECONDARY_COLOR if is_expanded else PRIMARY_COLOR
+        panel.update()
+        if not is_expanded:
+            sexo.value = None
+            edad.value = ""
+            creatinina.value = ""
+            for field in [sexo, edad, creatinina]:
+                field.update()
+            resultado_ckd.value = "eGFR (CKD-EPI 2021): -"
+            interpretacion_ckd.value = "Clasificación: -"
+            resultado_ckd.update()
+            interpretacion_ckd.update()
+
+    return ft.ExpansionPanelList(
+        on_change=on_expand_change,
+        expand_icon_color=TEXT_COLOR,
+        elevation=8,
+        divider_color=TEXT_COLOR,
+        controls=[
+            ft.ExpansionPanel(
+                ref=panel_ref,
+                header=ft.ListTile(
+                    title=ft.Text("CKD-EPI 2021", color=TEXT_COLOR),
+                    subtitle=ft.Text("Estimación del filtrado glomerular (eGFR)", color=TEXT_COLOR)
+                ),
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            sexo,
+                            edad,
+                            creatinina,
+                            resultado_ckd,
+                            interpretacion_ckd,
+                            ft.Divider(),
+                            ft.Text("Clasificación según KDIGO 2012:", weight=ft.FontWeight.BOLD, color=TEXT_COLOR),
+                            tabla_clasificacion
+                        ],
+                        spacing=12,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                    ),
+                    padding=ft.padding.symmetric(vertical=25, horizontal=50),
+                    alignment=ft.alignment.center
+                ),
+                bgcolor=PRIMARY_COLOR,
+                expanded=False
+            )
+        ]
+    )
+
 
 
 calculadoras = [
@@ -818,4 +976,9 @@ calculadoras = [
             "tags": ["sepsis", "adultos", "criterios"],
             "componente": sofa_score()
         },
+        {
+            "titulo": "CKD-EPI 2021",
+            "tags": ["nefrología", "función renal", "creatinina", "eGFR","adultos"],
+            "componente": ckd_epi_2021()
+        }
     ]

@@ -41,7 +41,8 @@ def info_page():
     )
 
     referencias = [
-        "- Huerta Aragonés J, Cela de Julián E. Hematología práctica: interpretación del hemograma y de las pruebas de coagulación. En: AEPap (ed.). Curso de Actualización Pediatría 2018. Madrid: Lúa Ediciones 3.0; 2018. p. 507-526."
+        "- Huerta Aragonés J, Cela de Julián E. Hematología práctica: interpretación del hemograma y de las pruebas de coagulación. En: AEPap (ed.). Curso de Actualización Pediatría 2018. Madrid: Lúa Ediciones 3.0; 2018. p. 507-526.",
+        "- Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810. doi:10.1001/jama.2016.0287"
     ]
 
     referencias_panel = ft.ExpansionPanelList(
