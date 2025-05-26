@@ -912,7 +912,7 @@ def ckd_epi_2021():
                 ref=panel_ref,
                 header=ft.ListTile(
                     title=ft.Text("CKD-EPI 2021", color=TEXT_COLOR),
-                    subtitle=ft.Text("Estimación del filtrado glomerular (eGFR)", color=TEXT_COLOR)
+                    subtitle=ft.Text("Estimación del filtrado glomerular (eGFR)",size=12, color=TEXT_COLOR)
                 ),
                 content=ft.Container(
                     content=ft.Column(
