@@ -106,19 +106,21 @@ def list_content_search(list_content):
                 filtered_items.append(cont)
         build_list(filtered_items)
 
-
     for cont in list_content:
         list_container.controls.append(cont["componente"])
 
-    return ft.Column(
-        controls=[
-            search_bar(filtrar_calculadoras, buscar, selecciona),
-            list_container
-        ],
-        expand=True,
-        scroll=ft.ScrollMode.AUTO,
-        height=True,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+    return ft.Container(
+        content=ft.Column(
+            controls=[
+                search_bar(filtrar_calculadoras, buscar, selecciona),
+                list_container
+            ],
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        padding=ft.padding.symmetric(horizontal=40),
+        expand=True
     )
 
 
