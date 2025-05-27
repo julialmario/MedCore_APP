@@ -3,6 +3,7 @@ import flet as ft
 
 RUTA_GUIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "guias"))
 
+
 def listar_guias_md():
     archivos = []
     if os.path.exists(RUTA_GUIAS):
@@ -19,29 +20,69 @@ def leer_guia_md(nombre_archivo):
         return f"Error leyendo archivo: {e}"
 
 def pantalla_home(page: ft.Page):
-    contenido_principal = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
+    contenido_principal = ft.Column(
+        expand=True,
+        scroll=ft.ScrollMode.AUTO,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    )
+
     seleccion_actual = {"archivo": None, "contenido": None}
+    lista_tarjetas = ft.Column(spacing=10)
+
+    def construir_tarjetas(filtro=""):
+        lista_tarjetas.controls.clear()
+        archivos = listar_guias_md()
+
+        if not archivos:
+            lista_tarjetas.controls.append(
+                ft.Text("No hay guías markdown en assets/guias", size=16, color=ft.Colors.RED)
+            )
+        else:
+            filtro = filtro.lower()
+            for archivo in archivos:
+                nombre_sin_ext = os.path.splitext(archivo)[0]
+                if filtro in nombre_sin_ext.lower():
+                    card = ft.Card(
+                        content=ft.Container(
+                            content=ft.ListTile(
+                                title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
+                                on_click=lambda e, a=archivo: ver_guia(a)
+                            ),
+                            width=500,
+                            padding=10
+                        )
+                    )
+                    lista_tarjetas.controls.append(
+                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER)
+                    )
+
+        page.update()
+
+    def filtrar_guia(e):
+        filtro = e.control.value
+        construir_tarjetas(filtro)
 
     def mostrar_lista():
         contenido_principal.controls.clear()
-        titulo = ft.Text("Guías Clínicas Markdown", size=22, weight="bold", text_align=ft.TextAlign.CENTER)
-        lista = ft.Column(spacing=10, expand=True)
 
-        archivos = listar_guias_md()
-        if not archivos:
-            lista.controls.append(ft.Text("No hay guías markdown en assets/guias", size=16, color=ft.Colors.RED))
-        else:
-            for archivo in archivos:
-                nombre_sin_ext = os.path.splitext(archivo)[0]
-                btn_ver = ft.ElevatedButton(
-                    f"Ver {nombre_sin_ext}",
-                    on_click=lambda e, a=archivo: ver_guia(a),
-                    width=300,
-                    height=40
-                )
-                lista.controls.append(btn_ver)
+        # Usamos SearchBar en lugar de TextField
+        search_bar = ft.SearchBar(
+            bar_hint_text="Buscar guía...",
+            view_hint_text="Escribe el nombre de la guía",
+            on_change=filtrar_guia,
+            controls=[],
+            expand=True,
+        )
 
-        contenido_principal.controls.extend([titulo, lista])
+        titulo = ft.Text("Med Pearls", size=25, weight="bold", text_align=ft.TextAlign.CENTER)
+
+        construir_tarjetas()
+
+        contenido_principal.controls.extend([
+            titulo,
+            ft.Container(content=search_bar, padding=10, alignment=ft.alignment.center),
+            lista_tarjetas
+        ])
         page.update()
 
     def ver_guia(archivo_md):
@@ -49,50 +90,31 @@ def pantalla_home(page: ft.Page):
         seleccion_actual["contenido"] = leer_guia_md(archivo_md)
 
         contenido_principal.controls.clear()
-        titulo = ft.Text(os.path.splitext(archivo_md)[0], size=20, weight="bold", text_align=ft.TextAlign.CENTER)
+        titulo = ft.Text(
+            os.path.splitext(archivo_md)[0],
+            size=20,
+            weight="bold",
+            text_align=ft.TextAlign.CENTER
+        )
         md = ft.Markdown(seleccion_actual["contenido"], expand=True)
 
-        btn_editar = ft.ElevatedButton("Editar", on_click=lambda e: editar_guia(archivo_md))
-        btn_volver = ft.ElevatedButton("Volver a la lista", on_click=lambda e: mostrar_lista())
-
-        contenido_principal.controls.extend([titulo, md, ft.Row([btn_editar, btn_volver], alignment=ft.MainAxisAlignment.CENTER)])
-        page.update()
-
-    def editar_guia(archivo_md):
-        contenido_principal.controls.clear()
-        titulo = ft.Text(f"Editar: {os.path.splitext(archivo_md)[0]}", size=20, weight="bold", text_align=ft.TextAlign.CENTER)
-
-        text_area = ft.TextField(
-            value=leer_guia_md(archivo_md),
-            multiline=True,
+        # Envolver Markdown en Container con padding para separar del borde
+        contenedor_md = ft.Container(
+            content=md,
+            padding=ft.padding.all(20),  # Aquí el padding que quieras, 20 px es un buen valor
+            width=700,                   # Puedes limitar el ancho para mejor lectura
             expand=True,
-            width=500,
-            height=400
         )
 
-        def guardar(e):
-            exito, error = guardar_guia_md(archivo_md, text_area.value)
-            if exito:
-                ver_guia(archivo_md)
-            else:
-                contenido_principal.controls.append(ft.Text(f"Error guardando: {error}", color=ft.Colors.RED))
-                page.update()
+        btn_volver = ft.ElevatedButton("Volver a la lista", on_click=lambda e: mostrar_lista())
 
-        btn_guardar = ft.ElevatedButton("Guardar", on_click=guardar)
-        btn_cancelar = ft.ElevatedButton("Cancelar", on_click=lambda e: ver_guia(archivo_md))
-
-        contenido_principal.controls.extend([titulo, text_area, ft.Row([btn_guardar, btn_cancelar], alignment=ft.MainAxisAlignment.CENTER)])
+        contenido_principal.controls.extend([
+            titulo,
+            contenedor_md,
+            ft.Row([btn_volver], alignment=ft.MainAxisAlignment.CENTER)
+        ])
         page.update()
 
-    def guardar_guia_md(nombre_archivo, contenido):
-        try:
-            with open(os.path.join(RUTA_GUIAS, nombre_archivo), "w", encoding="utf-8") as f:
-                f.write(contenido)
-            return True, ""
-        except Exception as e:
-            return False, str(e)
 
     mostrar_lista()
-
     return contenido_principal
-
