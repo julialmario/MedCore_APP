@@ -1,0 +1,3 @@
+flet
+beautifulsoup4
+requests

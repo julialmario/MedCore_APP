@@ -27,7 +27,7 @@ def main(page: ft.Page):
     # Pages add 
     def show_home():
         page.controls.clear()
-        page.add(bar, view_home)
+        page.add(bar,pantalla_home(page))
         page.update()
 
     def show_meds():
