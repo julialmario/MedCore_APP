@@ -1114,7 +1114,7 @@ def sodio_corregido():
             for field in [sodio, glucosa]:
                 field.update()
             resultado_sodio.value = "Sodio corregido: -"
-            ecuacion_sodio.value = "Ecuación: Na + 0.024 × (Glucosa - 100)"
+            ecuacion_sodio.value = "Ecuación: Na + 0.024 x (Glucosa - 100)"
             resultado_sodio.update()
             ecuacion_sodio.update()
 
