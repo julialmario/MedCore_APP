@@ -20,14 +20,19 @@ def leer_guia_md(nombre_archivo):
         return f"Error leyendo archivo: {e}"
 
 def pantalla_home(page: ft.Page):
-    contenido_principal = ft.Column(
+    # Envolver contenido principal en Container para separar bordes ventana
+    contenido_principal = ft.Container(
+        content=ft.Column(
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        ),
+        padding=ft.padding.symmetric(horizontal=30),  # Separación horizontal desde borde ventana
         expand=True,
-        scroll=ft.ScrollMode.AUTO,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER
     )
 
     seleccion_actual = {"archivo": None, "contenido": None}
-    lista_tarjetas = ft.Column(spacing=10)
+    lista_tarjetas = ft.Column(spacing=10, expand=True)
 
     def construir_tarjetas(filtro=""):
         lista_tarjetas.controls.clear()
@@ -48,24 +53,23 @@ def pantalla_home(page: ft.Page):
                                 title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
                                 on_click=lambda e, a=archivo: ver_guia(a)
                             ),
-                            width=500,
-                            padding=10
-                        )
+                            padding=20
+                        ),
+                        expand=True,
                     )
                     lista_tarjetas.controls.append(
-                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER)
+                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER, width=500,expand=True)
                     )
-
         page.update()
+
 
     def filtrar_guia(e):
         filtro = e.control.value
         construir_tarjetas(filtro)
 
     def mostrar_lista():
-        contenido_principal.controls.clear()
+        contenido_principal.content.controls.clear()
 
-        # Usamos SearchBar en lugar de TextField
         search_bar = ft.SearchBar(
             bar_hint_text="Buscar guía...",
             view_hint_text="Escribe el nombre de la guía",
@@ -78,9 +82,9 @@ def pantalla_home(page: ft.Page):
 
         construir_tarjetas()
 
-        contenido_principal.controls.extend([
+        contenido_principal.content.controls.extend([
             titulo,
-            ft.Container(content=search_bar, padding=10, alignment=ft.alignment.center),
+            ft.Container(content=search_bar, padding=15, alignment=ft.alignment.center),
             lista_tarjetas
         ])
         page.update()
@@ -89,7 +93,7 @@ def pantalla_home(page: ft.Page):
         seleccion_actual["archivo"] = archivo_md
         seleccion_actual["contenido"] = leer_guia_md(archivo_md)
 
-        contenido_principal.controls.clear()
+        contenido_principal.content.controls.clear()
         titulo = ft.Text(
             os.path.splitext(archivo_md)[0],
             size=20,
@@ -98,23 +102,21 @@ def pantalla_home(page: ft.Page):
         )
         md = ft.Markdown(seleccion_actual["contenido"], expand=True)
 
-        # Envolver Markdown en Container con padding para separar del borde
         contenedor_md = ft.Container(
             content=md,
-            padding=ft.padding.all(20),  # Aquí el padding que quieras, 20 px es un buen valor
-            width=700,                   # Puedes limitar el ancho para mejor lectura
+            padding=ft.padding.all(20),
+            width=700,
             expand=True,
         )
 
         btn_volver = ft.ElevatedButton("Volver a la lista", on_click=lambda e: mostrar_lista())
 
-        contenido_principal.controls.extend([
+        contenido_principal.content.controls.extend([
             titulo,
             contenedor_md,
             ft.Row([btn_volver], alignment=ft.MainAxisAlignment.CENTER)
         ])
         page.update()
-
 
     mostrar_lista()
     return contenido_principal
