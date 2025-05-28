@@ -135,16 +135,18 @@ def pantalla_historia_clinica(page: ft.Page):
         try:
             with open(ruta_archivo, "w", encoding="utf-8") as f:
                 f.write(contenido)
-            mensaje.value = f"Historia guardada como {nombre_archivo}"
-            mensaje.color = ft.Colors.GREEN
 
+            # Limpiar campos después de guardar
             for campo in campos.values():
                 campo.value = ""
+
+            # Mostrar la lista actualizada inmediatamente
+            mostrar_lista()
+
         except Exception as err:
             mensaje.value = f"Error al guardar: {err}"
             mensaje.color = ft.Colors.RED
-
-        page.update()
+            page.update()
 
     # Definimos el diálogo de confirmación una vez, y lo actualizaremos para cada archivo a eliminar
     confirm_dialog = ft.AlertDialog(
