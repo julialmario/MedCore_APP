@@ -86,7 +86,7 @@ def search_bar(filtrar, buscar, selecciona):
 def list_content_search(list_content):
     list_content.sort(key=lambda x: x["titulo"].lower())
 
-    list_container = ft.Column(expand=True, spacing=20)
+    list_container = ft.Column(spacing=20)
     buscar = "Buscar..."
     selecciona = "Selecciona..."
 
@@ -109,19 +109,22 @@ def list_content_search(list_content):
     for cont in list_content:
         list_container.controls.append(cont["componente"])
 
-    return ft.Container(
-        content=ft.Column(
-            controls=[
-                search_bar(filtrar_calculadoras, buscar, selecciona),
-                list_container
-            ],
-            expand=True,
-            scroll=ft.ScrollMode.AUTO,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        ),
-        padding=ft.padding.symmetric(horizontal=40),
-        expand=True
+    return ft.Column(
+        scroll=ft.ScrollMode.AUTO,
+        expand=True,
+        controls=[
+            ft.Container(
+                content=search_bar(filtrar_calculadoras, buscar, selecciona),
+                padding=ft.padding.symmetric(horizontal=40)
+            ),
+            ft.Container(
+                content=list_container,
+                padding=ft.padding.symmetric(horizontal=40)
+            )
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
 
 
 
