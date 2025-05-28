@@ -146,6 +146,23 @@ def pantalla_historia_clinica(page: ft.Page):
 
         page.update()
 
+    def eliminar_historia(nombre_archivo):
+        try:
+            os.remove(os.path.join(RUTA_HISTORIAS, nombre_archivo))
+            page.snack_bar = ft.SnackBar(
+                ft.Text(f"Historia '{nombre_archivo}' eliminada"),
+                bgcolor=ft.Colors.GREEN
+            )
+            page.snack_bar.open = True
+            mostrar_lista()
+        except Exception as err:
+            page.snack_bar = ft.SnackBar(
+                ft.Text(f"Error al eliminar: {err}"),
+                bgcolor=ft.Colors.RED
+            )
+            page.snack_bar.open = True
+        page.update()
+
     def mostrar_lista():
         vista_principal.controls.clear()
 
@@ -179,7 +196,21 @@ def pantalla_historia_clinica(page: ft.Page):
 
         archivos = listar_archivos_md()
         if not archivos:
-            vista_principal.controls.append(ft.Text("No hay historias clínicas guardadas."))
+            # Centrar el mensaje dentro de una fila y un contenedor, igual que las tarjetas
+            vista_principal.controls.append(
+                ft.Row(
+                    controls=[
+                        ft.Container(
+                            content=ft.Text("No hay historias clínicas guardadas."),
+                            padding=10,
+                            alignment=ft.alignment.center,
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                )
+            )
         else:
             for archivo in archivos:
                 nombre = os.path.splitext(archivo)[0]
@@ -187,7 +218,13 @@ def pantalla_historia_clinica(page: ft.Page):
                     content=ft.Container(
                         content=ft.ListTile(
                             title=ft.Text(nombre),
-                            on_click=lambda e, a=archivo: ver_historia(a)
+                            on_click=lambda e, a=archivo: ver_historia(a),
+                            trailing=ft.IconButton(
+                                icon=ft.Icons.DELETE,
+                                icon_color=ft.Colors.RED,
+                                tooltip="Eliminar historia",
+                                on_click=lambda e, a=archivo: eliminar_historia(a),
+                            )
                         ),
                         padding=10
                     )
