@@ -146,6 +146,18 @@ def pantalla_historia_clinica(page: ft.Page):
 
         page.update()
 
+    # Definimos el diálogo de confirmación una vez, y lo actualizaremos para cada archivo a eliminar
+    confirm_dialog = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Confirmar eliminación"),
+        content=ft.Text("¿Estás seguro que quieres eliminar esta historia clínica?"),
+        actions=[
+            ft.TextButton("No", on_click=lambda e: page.close(confirm_dialog)),
+            ft.TextButton("Sí", on_click=None),  # Aquí asignaremos la función dinámicamente
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+    )
+
     def eliminar_historia(nombre_archivo):
         try:
             os.remove(os.path.join(RUTA_HISTORIAS, nombre_archivo))
@@ -163,10 +175,20 @@ def pantalla_historia_clinica(page: ft.Page):
             page.snack_bar.open = True
         page.update()
 
+    def pedir_confirmacion_eliminar(nombre_archivo):
+        # Actualizamos el botón "Sí" para que elimine el archivo y cierre el diálogo
+        def on_confirm(e):
+            eliminar_historia(nombre_archivo)
+            page.close(confirm_dialog)
+            page.update()
+
+        # Reasignamos el on_click dinámicamente
+        confirm_dialog.actions[1].on_click = on_confirm
+        page.open(confirm_dialog)
+
     def mostrar_lista():
         vista_principal.controls.clear()
 
-        # Contenedor superior con título y botón
         encabezado = ft.Container(
             content=ft.Row(
                 controls=[
@@ -196,7 +218,6 @@ def pantalla_historia_clinica(page: ft.Page):
 
         archivos = listar_archivos_md()
         if not archivos:
-            # Centrar el mensaje dentro de una fila y un contenedor, igual que las tarjetas
             vista_principal.controls.append(
                 ft.Row(
                     controls=[
@@ -223,7 +244,7 @@ def pantalla_historia_clinica(page: ft.Page):
                                 icon=ft.Icons.DELETE,
                                 icon_color=ft.Colors.RED,
                                 tooltip="Eliminar historia",
-                                on_click=lambda e, a=archivo: eliminar_historia(a),
+                                on_click=lambda e, a=archivo: pedir_confirmacion_eliminar(a),
                             )
                         ),
                         padding=10
