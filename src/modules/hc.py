@@ -57,18 +57,46 @@ def pantalla_historia_clinica(page: ft.Page):
 
         formulario = ft.Column(
             controls=[
-                ft.Text("Nueva Historia Clínica", size=24, weight="bold"),
+                ft.Row(
+                    controls=[
+                        ft.Text("Nueva Historia Clínica", size=24, weight="bold", expand=True),
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK,
+                            tooltip="Volver a la lista",
+                            on_click=lambda e: mostrar_lista(),
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.SAVE,
+                            tooltip="Guardar historia clínica",
+                            on_click=guardar_historia,
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                ),
                 *campos.values(),
-                ft.ElevatedButton("Guardar historia clínica", icon=ft.Icons.SAVE, on_click=guardar_historia),
-                ft.ElevatedButton("Volver a la lista", icon=ft.Icons.ARROW_BACK, on_click=lambda e: mostrar_lista()),
                 mensaje,
             ],
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=20,
+        )
+
+        contenedor_formulario = ft.Container(
+            content=formulario,
+            padding=20,
+            margin=ft.margin.symmetric(horizontal=100),  # Margen lateral
+            width=500,
+            alignment=ft.alignment.center,
+            expand=True
         )
 
         vista_principal.controls.append(
-            ft.Container(content=formulario, padding=30, width=600, alignment=ft.alignment.center, expand=True)
+            ft.Row(
+                controls=[contenedor_formulario],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True,
+            )
         )
+
         page.update()
 
     def guardar_historia(e):
