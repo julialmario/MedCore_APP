@@ -1,7 +1,7 @@
 import os
 import flet as ft
 
-RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "hc"))
+RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "historias_clinicas"))
 os.makedirs(RUTA_HISTORIAS, exist_ok=True)
 
 def pantalla_historia_clinica(page: ft.Page):
