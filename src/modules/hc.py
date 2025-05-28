@@ -337,10 +337,17 @@ def pantalla_historia_clinica(page: ft.Page):
             for archivo in archivos:
                 nombre = os.path.splitext(archivo)[0]
 
-                # Creamos fila con botones ver, editar y eliminar
+                # El texto con on_click para mostrar la historia
+                boton_nombre = ft.TextButton(
+                    text=nombre,
+                    expand=True,
+                    style=ft.ButtonStyle(text_style=ft.TextStyle(size=16)),
+                    on_click=lambda e, a=archivo: ver_historia(a),
+                )
+
                 fila = ft.Row(
                     controls=[
-                        ft.Text(nombre, expand=True, size=16),
+                        boton_nombre,
                         ft.IconButton(
                             icon=ft.Icons.EDIT,
                             tooltip="Editar historia",
@@ -356,6 +363,7 @@ def pantalla_historia_clinica(page: ft.Page):
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=5,
                 )
+
 
                 card = ft.Card(
                     content=ft.Container(
