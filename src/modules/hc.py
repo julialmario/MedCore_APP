@@ -51,7 +51,20 @@ def pantalla_historia_clinica(page: ft.Page):
         vista_principal.controls.clear()
 
         vista_principal.controls.append(ft.Text(os.path.splitext(nombre_archivo)[0], size=22, weight="bold"))
-        vista_principal.controls.append(ft.Markdown(contenido, expand=True, selectable=True))
+        vista_principal.controls.append(
+            ft.Row(
+                controls=[
+                    ft.Container(
+                        content=ft.Markdown(contenido, expand=True, selectable=True),
+                        alignment=ft.alignment.center,
+                        width=600  # Puedes ajustar el ancho si lo deseas
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True
+            )
+        )
         vista_principal.controls.append(
             ft.ElevatedButton("Volver a la lista", icon=ft.Icons.ARROW_BACK, on_click=lambda e: mostrar_lista())
         )
