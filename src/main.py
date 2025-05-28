@@ -3,6 +3,7 @@ from modules.home import *
 from modules.calculadoras import *
 from modules.navigation import *
 from modules.info import *
+from modules.hc import *
 from modules.paraclinicos import *
 
 
@@ -47,7 +48,7 @@ def main(page: ft.Page):
 
     def show_hc():
         page.controls.clear()
-        page.add(bar, ft.Text("Historia clinica"))
+        page.add(bar, pantalla_historia_clinica(page))
         page.update()
 
     def show_info():
