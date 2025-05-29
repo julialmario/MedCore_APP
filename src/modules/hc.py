@@ -125,12 +125,17 @@ def pantalla_historia_clinica(page: ft.Page):
         contenido = leer_archivo_md(nombre_archivo)
         vista_principal.controls.clear()
 
-        # Opcional: puedes agregar un separador visual arriba
+        # Título centrado
         vista_principal.controls.append(
-            ft.Text(os.path.splitext(nombre_archivo)[0], size=22, weight="bold", text_align=ft.TextAlign.CENTER)
+            ft.Text(
+                os.path.splitext(nombre_archivo)[0],
+                size=22,
+                weight="bold",
+                text_align=ft.TextAlign.CENTER
+            )
         )
 
-        # El Markdown se muestra centrado y con ancho fijo para mejor lectura
+        # Contenedor responsivo para el Markdown
         vista_principal.controls.append(
             ft.Row(
                 controls=[
@@ -140,22 +145,28 @@ def pantalla_historia_clinica(page: ft.Page):
                             expand=True,
                             selectable=True,
                             extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
-                            code_theme="atom-one-light",  # O el tema que prefieras
+                            code_theme="atom-one-light",
                             on_tap_link=lambda e: page.launch_url(e.data)
                         ),
                         alignment=ft.alignment.center,
-                        width=700,  # Puedes ajustar el ancho
-                        padding=ft.padding.all(20),
+                        padding=ft.padding.all(10),
+                        expand=True  # Usa width en vez de max_width
                     )
+                    
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                expand=True
+                expand=True,
+                width=True,
             )
         )
 
         vista_principal.controls.append(
-            ft.ElevatedButton("Volver a la lista", icon=ft.Icons.ARROW_BACK, on_click=lambda e: mostrar_lista())
+            ft.ElevatedButton(
+                "Volver a la lista",
+                icon=ft.Icons.ARROW_BACK,
+                on_click=lambda e: mostrar_lista()
+            )
         )
         page.update()
 
@@ -347,12 +358,12 @@ def pantalla_historia_clinica(page: ft.Page):
 
         # Estructura Markdown
         contenido = f"# Historia Clínica\n\n"
-        contenido += "## Datos personales\n"
+        contenido += f"## Datos personales\n\n"
         for k in [
             "documento", "nombre", "estado_civil", "fecha_nacimiento", "edad", "sexo", "hemoclasificacion",
             "ocupacion", "escolaridad", "direccion", "nombre_acompanante", "parentesco_acompanante", "eps", "fuente_info"
         ]:
-            contenido += f"**{campos[k].label}:** {datos[k]}\n"
+            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
         contenido += "\n## Motivo de consulta\n"
         contenido += f"{datos['motivo']}\n"
