@@ -245,18 +245,25 @@ def pantalla_historia_clinica(page: ft.Page):
                 ft.Text("Examen físico", weight="bold"),
                 campos["aspectos_generales"],
                 ft.Text("Signos vitales", weight="bold"),
-                ft.Row(
-                    controls=[
-                        campos["t"],
-                        campos["fc"],
-                        campos["fr"],
-                        campos["pa"],
-                        campos["sao2"],
-                        campos["fio2"],
-                    ],
-                    spacing=10,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    width=True,  # Esto permite que se acomoden en varias líneas si el espacio es pequeño
+                ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            campos["t"],
+                            campos["fc"],
+                            campos["fr"],
+                            campos["pa"],
+                            campos["sao2"],
+                            campos["fio2"],
+                        ],
+                        spacing=10,
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        expand=True,
+                        wrap=True,  # Permite que los campos bajen si no hay espacio horizontal
+                    ),
+                    alignment=ft.alignment.center,
+                    expand=True,
+                    width=True,  # Puedes ajustar este valor o quitarlo para que use todo el ancho disponible
+                    padding=ft.padding.symmetric(vertical=5),
                 ),
                 campos["peso"], campos["talla"], campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
                 campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
@@ -279,8 +286,8 @@ def pantalla_historia_clinica(page: ft.Page):
         contenedor_formulario = ft.Container(
             content=formulario,
             padding=20,
-            margin=ft.margin.symmetric(horizontal=100),
-            width=500,
+            margin=ft.margin.symmetric(horizontal=20),
+            width=20,
             alignment=ft.alignment.center,
             expand=True
         )
