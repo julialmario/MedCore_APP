@@ -44,8 +44,16 @@ def pantalla_historia_clinica(page: ft.Page):
         "direccion": ft.TextField(label="Dirección y Lugar de residencia"),
         "nombre_acompanante": ft.TextField(label="Nombre Acompañante"),
         "parentesco_acompanante": ft.TextField(label="Parentesco del acompañante"),
+        "fuente_info": ft.Dropdown(
+            label="Confiabilidad",
+            options=[
+                ft.dropdown.Option("Buena"),
+                ft.dropdown.Option("Aceptable"),
+                ft.dropdown.Option("Baja"),
+            ],
+            expand=True,
+        ),
         "eps": ft.TextField(label="EPS"),
-        "fuente_info": ft.TextField(label="Fuente de información y confiabilidad"),
         "motivo": ft.TextField(label="Motivo de consulta", multiline=True, max_lines=3),
         "enfermedad_actual": ft.TextField(label="Enfermedad actual", multiline=True, max_lines=3),
 
@@ -125,13 +133,35 @@ def pantalla_historia_clinica(page: ft.Page):
         contenido = leer_archivo_md(nombre_archivo)
         vista_principal.controls.clear()
 
-        # Título centrado
+        nombre_paciente = os.path.splitext(nombre_archivo)[0]
+
+        # Título y botones en la parte superior, separados del borde lateral
         vista_principal.controls.append(
-            ft.Text(
-                os.path.splitext(nombre_archivo)[0],
-                size=22,
-                weight="bold",
-                text_align=ft.TextAlign.CENTER
+            ft.Container(
+                content=ft.Row(
+                    controls=[
+                        ft.Text(
+                            nombre_paciente,
+                            size=22,
+                            weight="bold",
+                            text_align=ft.TextAlign.CENTER,
+                            expand=True
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK,
+                            tooltip="Volver a la lista",
+                            on_click=lambda e: mostrar_lista()
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.EDIT,
+                            tooltip="Editar historia",
+                            on_click=lambda e: mostrar_formulario(e, editar=True, archivo=nombre_archivo)
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                padding=ft.padding.symmetric(horizontal=24),  # <-- Solo separación lateral
             )
         )
 
@@ -150,24 +180,15 @@ def pantalla_historia_clinica(page: ft.Page):
                         ),
                         alignment=ft.alignment.center,
                         padding=ft.padding.all(10),
-                        expand=True  # Usa width en vez de max_width
+                        expand=True
                     )
-                    
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 expand=True,
-                width=True,
             )
         )
 
-        vista_principal.controls.append(
-            ft.ElevatedButton(
-                "Volver a la lista",
-                icon=ft.Icons.ARROW_BACK,
-                on_click=lambda e: mostrar_lista()
-            )
-        )
         page.update()
 
     def mostrar_formulario(e=None, editar=False, archivo=None):
@@ -256,7 +277,16 @@ def pantalla_historia_clinica(page: ft.Page):
                     expand=True,
                 ),
                 campos["ocupacion"], campos["escolaridad"], campos["direccion"],
-                campos["nombre_acompanante"], campos["parentesco_acompanante"], campos["eps"], campos["fuente_info"],
+                campos["nombre_acompanante"],
+                ft.Row(
+                    controls=[
+                        campos["parentesco_acompanante"],
+                        campos["fuente_info"],
+                    ],
+                    spacing=10,
+                    expand=True,
+                ),
+                campos["eps"],
 
                 ft.Text("Motivo de consulta", weight="bold"),
                 campos["motivo"],
