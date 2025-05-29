@@ -79,6 +79,12 @@ def pantalla_historia_clinica(page: ft.Page):
         "dx": ft.TextField(label="DX", multiline=True, max_lines=2),
         "analisis": ft.TextField(label="Analisis", multiline=True, max_lines=2),
         "plan_manejo": ft.TextField(label="Plan de manejo", multiline=True, max_lines=2),
+        "t": ft.TextField(label="T", width=90),
+        "fc": ft.TextField(label="FC", width=90),
+        "fr": ft.TextField(label="FR", width=90),
+        "pa": ft.TextField(label="PA", width=90),
+        "sao2": ft.TextField(label="SAO2", width=90),
+        "fio2": ft.TextField(label="FIO2", width=90),
     }
 
     # Variable para almacenar el archivo actual que se está editando (None si es nuevo)
@@ -237,8 +243,23 @@ def pantalla_historia_clinica(page: ft.Page):
                 campos["revision_sistemas"],
 
                 ft.Text("Examen físico", weight="bold"),
-                campos["aspectos_generales"], campos["signos_vitales"], campos["peso"], campos["talla"], campos["piel"], campos["cabeza"],
-                campos["ojos"], campos["boca"], campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
+                campos["aspectos_generales"],
+                ft.Text("Signos vitales", weight="bold"),
+                ft.Row(
+                    controls=[
+                        campos["t"],
+                        campos["fc"],
+                        campos["fr"],
+                        campos["pa"],
+                        campos["sao2"],
+                        campos["fio2"],
+                    ],
+                    spacing=10,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    width=True,  # Esto permite que se acomoden en varias líneas si el espacio es pequeño
+                ),
+                campos["peso"], campos["talla"], campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
+                campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
                 campos["neuromuscular"], campos["musculo_esqueletico"],
 
                 ft.Text("DX", weight="bold"),
@@ -315,21 +336,23 @@ def pantalla_historia_clinica(page: ft.Page):
         for k in [
             "prenatales", "alimentacion", "crecimiento", "inmunizaciones", "sicosociales", "escolaridad_no_pat"
         ]:
-            contenido += f"**{campos[k].label}:** {datos[k]}\n"
+            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
         contenido += "\n### Familiares\n"
         for k in ["familiares_patologias", "familiares_composicion"]:
-            contenido += f"**{campos[k].label}:** {datos[k]}\n"
+            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
         contenido += "\n## Revisión por sistemas\n"
         contenido += f"{datos['revision_sistemas']}\n"
 
         contenido += "\n## Examen físico\n"
         for k in [
-            "aspectos_generales", "signos_vitales", "peso", "talla", "piel", "cabeza", "ojos", "boca", "oidos",
-            "nariz", "cuello", "cardiopulmonar", "abdomen", "neuromuscular", "musculo_esqueletico"
+            "aspectos_generales",
+            "t", "fc", "fr", "pa", "sao2", "fio2",  # signos vitales individuales
+            "peso", "talla", "piel", "cabeza", "ojos", "boca", "oidos", "nariz", "cuello",
+            "cardiopulmonar", "abdomen", "neuromuscular", "musculo_esqueletico"
         ]:
-            contenido += f"**{campos[k].label}:** {datos[k]}\n"
+            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
         contenido += "\n## DX\n"
         contenido += f"{datos['dx']}\n"
