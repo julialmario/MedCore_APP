@@ -1,11 +1,12 @@
 import os
 import flet as ft
+import asyncio
 
 RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "historias_clinicas"))
 os.makedirs(RUTA_HISTORIAS, exist_ok=True)
 
 def pantalla_historia_clinica(page: ft.Page):
-    mensaje = ft.Text("", color=ft.Colors.GREEN)
+    mensaje = ft.Text("", color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER)
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
     # Campos del formulario según tu estructura
@@ -22,8 +23,22 @@ def pantalla_historia_clinica(page: ft.Page):
                 ft.dropdown.Option("Femenino"),
                 ft.dropdown.Option("Otro"),
             ],
+            expand=True,
         ),
-        "hemoclasificacion": ft.TextField(label="Hemoclasificación"),
+        "hemoclasificacion": ft.Dropdown(
+            label="Hemoclasificación",
+            options=[
+                ft.dropdown.Option("A+"),
+                ft.dropdown.Option("A-"),
+                ft.dropdown.Option("B+"),
+                ft.dropdown.Option("B-"),
+                ft.dropdown.Option("AB+"),
+                ft.dropdown.Option("AB-"),
+                ft.dropdown.Option("O+"),
+                ft.dropdown.Option("O-"),
+            ],
+            expand=True,
+        ),
         "ocupacion": ft.TextField(label="Ocupación"),
         "escolaridad": ft.TextField(label="Escolaridad"),
         "direccion": ft.TextField(label="Dirección y Lugar de residencia"),
@@ -202,6 +217,7 @@ def pantalla_historia_clinica(page: ft.Page):
 
         formulario = ft.Column(
             controls=[
+                mensaje,  # Mensaje centrado arriba
                 ft.Row(
                     controls=[
                         ft.Text("Historia Clínica", size=24, weight="bold", expand=True),
@@ -219,8 +235,16 @@ def pantalla_historia_clinica(page: ft.Page):
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
                 ft.Text("Datos personales", weight="bold"),
-                campos["documento"], campos["nombre"], campos["estado_civil"], campos["fecha_nacimiento"], campos["edad"], campos["sexo"],
-                campos["hemoclasificacion"], campos["ocupacion"], campos["escolaridad"], campos["direccion"],
+                campos["documento"], campos["nombre"], campos["estado_civil"], campos["fecha_nacimiento"], campos["edad"],
+                ft.Row(
+                    controls=[
+                        campos["sexo"],
+                        campos["hemoclasificacion"],
+                    ],
+                    spacing=10,
+                    expand=True,
+                ),
+                campos["ocupacion"], campos["escolaridad"], campos["direccion"],
                 campos["nombre_acompanante"], campos["parentesco_acompanante"], campos["eps"], campos["fuente_info"],
 
                 ft.Text("Motivo de consulta", weight="bold"),
@@ -277,10 +301,9 @@ def pantalla_historia_clinica(page: ft.Page):
 
                 ft.Text("Plan de manejo", weight="bold"),
                 campos["plan_manejo"],
-
-                mensaje,
             ],
             spacing=15,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centra los hijos del formulario
         )
 
         contenedor_formulario = ft.Container(
@@ -301,6 +324,11 @@ def pantalla_historia_clinica(page: ft.Page):
             )
         )
 
+        page.update()
+
+    async def ocultar_mensaje():
+        await asyncio.sleep(1.5)  # Tiempo en segundos
+        mensaje.value = ""
         page.update()
 
     def guardar_historia(e):
@@ -386,7 +414,8 @@ def pantalla_historia_clinica(page: ft.Page):
 
             mensaje.value = "Historia guardada correctamente."
             mensaje.color = ft.Colors.GREEN
-            mostrar_lista()
+            page.update()
+            page.run_task(ocultar_mensaje)
 
         except Exception as err:
             mensaje.value = f"Error al guardar: {err}"
