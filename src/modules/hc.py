@@ -1,6 +1,7 @@
 import os
 import flet as ft
 import asyncio
+import re
 
 RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "historias_clinicas"))
 os.makedirs(RUTA_HISTORIAS, exist_ok=True)
@@ -9,9 +10,33 @@ def pantalla_historia_clinica(page: ft.Page):
     mensaje = ft.Text("", color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER)
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
+    def on_fecha_change(e):
+        valor = campos["fecha_historia"].value
+        # Solo permite números y guiones, máximo 10 caracteres
+        valor = re.sub(r"[^\d-]", "", valor)[:10]
+        # Autocompleta los guiones
+        if len(valor) == 4 and not valor.endswith("-"):
+            valor += "-"
+        elif len(valor) == 7 and valor.count("-") == 1:
+            valor += "-"
+        # Corrige si el usuario borra y vuelve a escribir
+        if len(valor) > 4 and valor[4] != "-":
+            valor = valor[:4] + "-" + valor[4:]
+        if len(valor) > 7 and valor[7] != "-":
+            valor = valor[:7] + "-" + valor[7:]
+        campos["fecha_historia"].value = valor
+        page.update()
+
     # Campos del formulario según tu estructura
     campos = {
-        "documento": ft.TextField(label="Documento"),
+        "documento": ft.TextField(label="Documento", expand=True),
+        "cama": ft.TextField(label="Cama", expand=True),
+        "fecha_historia": ft.TextField(
+            label="Fecha historia",
+            hint_text="YYYY-MM-DD",
+            expand=True,
+            on_change=on_fecha_change,
+        ),
         "nombre": ft.TextField(label="Nombre y apellidos"),
         "estado_civil": ft.TextField(label="Estado civil"),
         "fecha_nacimiento": ft.TextField(label="Fecha de nacimiento"),
@@ -43,7 +68,17 @@ def pantalla_historia_clinica(page: ft.Page):
         "escolaridad": ft.TextField(label="Escolaridad"),
         "direccion": ft.TextField(label="Dirección y Lugar de residencia"),
         "nombre_acompanante": ft.TextField(label="Nombre Acompañante"),
-        "parentesco_acompanante": ft.TextField(label="Parentesco del acompañante"),
+        "parentesco_acompanante": ft.Dropdown(
+            label="Parentesco del acompañante",
+            options=[
+                ft.dropdown.Option("Madre"),
+                ft.dropdown.Option("Padre"),
+                ft.dropdown.Option("Hijo/a"),
+                ft.dropdown.Option("Esposo/a"),
+                ft.dropdown.Option("Amigo"),
+            ],
+            expand=True,
+        ),
         "fuente_info": ft.Dropdown(
             label="Confiabilidad",
             options=[
@@ -86,8 +121,8 @@ def pantalla_historia_clinica(page: ft.Page):
         # Examen físico
         "aspectos_generales": ft.TextField(label="Aspectos generales", multiline=True, max_lines=2),
         "signos_vitales": ft.TextField(label="Signos vitales (T, FC, FR, PA, SAO2, FIO2)", multiline=True, max_lines=2),
-        "peso": ft.TextField(label="Peso"),
-        "talla": ft.TextField(label="Talla"),
+        "peso": ft.TextField(label="Peso/Kg", width=100),
+        "talla": ft.TextField(label="Talla/Cm", width=100),
         "piel": ft.TextField(label="Piel", multiline=True, max_lines=2),
         "cabeza": ft.TextField(label="Cabeza", multiline=True, max_lines=2),
         "ojos": ft.TextField(label="Ojos", multiline=True, max_lines=2),
@@ -208,8 +243,10 @@ def pantalla_historia_clinica(page: ft.Page):
                 if line.startswith("### "):
                     seccion = line.replace("###", "").strip().lower()
                     continue
-                if line.startswith("**") and ":**" in line:
-                    label, valor = line.split(":**", 1)
+                if (line.startswith("**") or line.startswith("- **")) and ":**" in line:
+                    # Quita el guion si existe
+                    clean_line = line.lstrip("- ").strip()
+                    label, valor = clean_line.split(":**", 1)
                     label = label.replace("**", "").strip()
                     valor = valor.strip()
                     # Buscar el campo por label
@@ -267,7 +304,17 @@ def pantalla_historia_clinica(page: ft.Page):
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
                 ft.Text("Datos personales", weight="bold"),
-                campos["documento"], campos["nombre"], campos["estado_civil"], campos["fecha_nacimiento"], campos["edad"],
+                ft.Row(
+                    controls=[
+                        campos["documento"],
+                        campos["cama"],
+                        campos["fecha_historia"],
+                    ],
+                    spacing=10,
+                    expand=True,
+                ),
+                campos["eps"],  # EPS debajo de la fila
+                campos["nombre"], campos["estado_civil"], campos["fecha_nacimiento"], campos["edad"],
                 ft.Row(
                     controls=[
                         campos["sexo"],
@@ -323,14 +370,32 @@ def pantalla_historia_clinica(page: ft.Page):
                         spacing=10,
                         alignment=ft.MainAxisAlignment.CENTER,
                         expand=True,
-                        wrap=True,  # Permite que los campos bajen si no hay espacio horizontal
+                        wrap=True,
                     ),
                     alignment=ft.alignment.center,
                     expand=True,
-                    width=True,  # Puedes ajustar este valor o quitarlo para que use todo el ancho disponible
+                    width=True,
                     padding=ft.padding.symmetric(vertical=5),
                 ),
-                campos["peso"], campos["talla"], campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
+                ft.Text("Antropometría", weight="bold"),  # <-- Nuevo título
+                ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            campos["peso"],
+                            campos["talla"],
+                        ],
+                        spacing=10,
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        expand=True,
+                        wrap=True,
+                    ),
+                    alignment=ft.alignment.center,
+                    expand=True,
+                    width=True,
+                    padding=ft.padding.symmetric(vertical=5),
+                ),
+                ft.Text("Examen físico por sistemas", weight="bold"),  # <-- Nuevo título
+                campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
                 campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
                 campos["neuromuscular"], campos["musculo_esqueletico"],
 
@@ -383,6 +448,25 @@ def pantalla_historia_clinica(page: ft.Page):
             page.update()
             return
 
+        # Validación de fecha
+        fecha = campos["fecha_historia"].value.strip()
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", fecha):
+            mensaje.value = "La fecha debe tener el formato YYYY-MM-DD."
+            mensaje.color = ft.Colors.RED
+            page.update()
+            return
+        try:
+            anio, mes, dia = map(int, fecha.split("-"))
+            if not (1 <= mes <= 12):
+                raise ValueError
+            if not (1 <= dia <= 31):
+                raise ValueError
+        except Exception:
+            mensaje.value = "La fecha debe ser válida (año, mes 1-12, día 1-31)."
+            mensaje.color = ft.Colors.RED
+            page.update()
+            return
+
         nombre_archivo = nombre.replace(" ", "_") + ".md"
         ruta_archivo = os.path.join(RUTA_HISTORIAS, nombre_archivo)
 
@@ -390,10 +474,11 @@ def pantalla_historia_clinica(page: ft.Page):
         contenido = f"# Historia Clínica\n\n"
         contenido += f"## Datos personales\n\n"
         for k in [
-            "documento", "nombre", "estado_civil", "fecha_nacimiento", "edad", "sexo", "hemoclasificacion",
-            "ocupacion", "escolaridad", "direccion", "nombre_acompanante", "parentesco_acompanante", "eps", "fuente_info"
+            "documento", "cama", "fecha_historia", "eps",
+            "nombre", "estado_civil", "fecha_nacimiento", "edad", "sexo", "hemoclasificacion",
+            "ocupacion", "escolaridad", "direccion", "nombre_acompanante", "parentesco_acompanante", "fuente_info"
         ]:
-            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
+            contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
 
         contenido += "\n## Motivo de consulta\n"
         contenido += f"{datos['motivo']}\n"
