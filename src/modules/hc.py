@@ -415,6 +415,10 @@ def pantalla_historia_clinica(page: ft.Page):
             mensaje.value = "Historia guardada correctamente."
             mensaje.color = ft.Colors.GREEN
             page.update()
+            # Mostrar la lista inmediatamente después de guardar
+            mostrar_lista()
+
+            # Si quieres que el mensaje desaparezca después de volver a la lista:
             page.run_task(ocultar_mensaje)
 
         except Exception as err:
