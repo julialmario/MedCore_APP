@@ -13,7 +13,6 @@ def pantalla_historia_clinica(page: ft.Page):
     mensaje = ft.Text("", color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER)
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
-    formulario_abierto = {"abierto": False}
     autoguardado_activo = {"activo": False}
 
     async def autoguardado_loop():
@@ -315,6 +314,14 @@ Aislamiento por gota
         vista_principal.controls.clear()
         archivo_actual = archivo if editar else None
 
+        # Mensaje informativo solo al crear una nueva historia
+        if not editar:
+            mensaje.value = "Para poder guardar automáticamente debes completar los datos personales obligatorios."
+            mensaje.color = ft.Colors.BLUE
+        else:
+            mensaje.value = ""
+            mensaje.color = ft.Colors.GREEN
+
         # Inicia el autoguardado
         autoguardado_activo["activo"] = True
         page.run_task(autoguardado_loop)
@@ -589,51 +596,25 @@ Aislamiento por gota
         datos = {k: v.value for k, v in campos.items()}
         formato = formato_seleccionado["valor"]
 
-        # Validación básica
         if formato == "General":
             nombre = campos["nombre"].value.strip()
-            if not nombre:
-                mensaje.value = "Debes ingresar el nombre y apellidos del paciente."
-                mensaje.color = ft.Colors.RED
-                page.update()
+            edad = campos["edad"].value.strip()
+            if not nombre or not edad:
+                if not autoguardado:
+                    mensaje.value = "Debes ingresar el nombre y apellidos del paciente y la edad."
+                    mensaje.color = ft.Colors.RED
+                    page.update()
                 return
         elif formato == "Pediátrico":
             hijo_de = campos["hijo_de"].value.strip()
             edad_gestacional = campos["edad_gestacional"].value.strip()
             if not hijo_de or not edad_gestacional:
-                mensaje.value = "Debes ingresar los campos 'Hijo de' y 'Edad gestacional'."
-                mensaje.color = ft.Colors.RED
-                page.update()
+                if not autoguardado:
+                    mensaje.value = "Debes ingresar los campos 'Hijo de' y 'Edad gestacional'."
+                    mensaje.color = ft.Colors.RED
+                    page.update()
                 return
-            # Si ambos campos están completos y el mensaje era de esos campos, límpialo
-            if mensaje.value == "Debes ingresar los campos 'Hijo de' y 'Edad gestacional'.":
-                mensaje.value = ""
-                page.update()
-        nombre = hijo_de
-
-        # Validación de fecha (solo si existe el campo)
-        if "fecha_historia" in campos:
-            fecha = campos["fecha_historia"].value.strip()
-            if fecha and not re.match(r"^\d{4}-\d{2}-\d{2}$", fecha):
-                mensaje.value = "La fecha debe tener el formato YYYY-MM-DD."
-                mensaje.color = ft.Colors.RED
-                page.update()
-                return
-            try:
-                if fecha:
-                    anio, mes, dia = map(int, fecha.split("-"))
-                    if not (1 <= mes <= 12):
-                        raise ValueError
-                    if not (1 <= dia <= 31):
-                        raise ValueError
-                    if mensaje.value.startswith("La fecha"):
-                        mensaje.value = ""
-                        page.update()
-            except Exception:
-                mensaje.value = "La fecha debe ser válida (año, mes 1-12, día 1-31)."
-                mensaje.color = ft.Colors.RED
-                page.update()
-                return
+            nombre = hijo_de  # Para el nombre del archivo
 
         nombre_archivo = nombre.replace(" ", "_") + ".md"
         ruta_archivo = os.path.join(RUTA_HISTORIAS, nombre_archivo)
@@ -739,6 +720,10 @@ Aislamiento por gota
                 os.remove(os.path.join(RUTA_HISTORIAS, archivo_actual))
             with open(ruta_archivo, "w", encoding="utf-8") as f:
                 f.write(contenido)
+
+            # Limpiar mensaje después de guardar correctamente
+            mensaje.value = ""
+            page.update()
 
             if not autoguardado:
                 mensaje.value = "Historia guardada correctamente."
