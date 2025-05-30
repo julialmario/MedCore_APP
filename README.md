@@ -122,8 +122,9 @@ medcore_app/
 * [x] Búsqueda interactiva por nombre o etiqueta
 * [ ] Pearls guías Americanas, Europeas y Colombianas
 * [x] Creador de historias clínicas
-    * [ ] Elegir formatos de historias clinicas
+    * [x] Elegir formatos de historias clinicas
     * [ ] Exportar historias clínicas a PDF/Markdown
+    * [x] Autoguardado de historias clinicas
 * [ ] Personalización de temas de color
 
 
