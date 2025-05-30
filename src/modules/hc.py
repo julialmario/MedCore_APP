@@ -10,21 +10,29 @@ def pantalla_historia_clinica(page: ft.Page):
     mensaje = ft.Text("", color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER)
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
+    formulario_abierto = {"abierto": False}
+
     def on_fecha_change(e):
         valor = campos["fecha_historia"].value
         # Solo permite números y guiones, máximo 10 caracteres
-        valor = re.sub(r"[^\d-]", "", valor)[:10]
-        # Autocompleta los guiones
-        if len(valor) == 4 and not valor.endswith("-"):
-            valor += "-"
-        elif len(valor) == 7 and valor.count("-") == 1:
-            valor += "-"
-        # Corrige si el usuario borra y vuelve a escribir
-        if len(valor) > 4 and valor[4] != "-":
-            valor = valor[:4] + "-" + valor[4:]
-        if len(valor) > 7 and valor[7] != "-":
-            valor = valor[:7] + "-" + valor[7:]
-        campos["fecha_historia"].value = valor
+        valor_filtrado = re.sub(r"[^\d-]", "", valor)[:10]
+        # Detecta si el usuario está borrando
+        if len(valor_filtrado) < len(getattr(on_fecha_change, "ultimo_valor", "")):
+            # Si está borrando, no autocompleta guiones
+            campos["fecha_historia"].value = valor_filtrado
+        else:
+            # Autocompleta los guiones solo al escribir
+            if len(valor_filtrado) == 4 and not valor_filtrado.endswith("-"):
+                valor_filtrado += "-"
+            elif len(valor_filtrado) == 7 and valor_filtrado.count("-") == 1:
+                valor_filtrado += "-"
+            if len(valor_filtrado) > 4 and valor_filtrado[4] != "-":
+                valor_filtrado = valor_filtrado[:4] + "-" + valor_filtrado[4:]
+            if len(valor_filtrado) > 7 and valor_filtrado[7] != "-":
+                valor_filtrado = valor_filtrado[:7] + "-" + valor_filtrado[7:]
+            campos["fecha_historia"].value = valor_filtrado
+        # Guarda el último valor para la próxima llamada
+        on_fecha_change.ultimo_valor = campos["fecha_historia"].value
         page.update()
 
     # Campos del formulario según tu estructura
@@ -39,8 +47,8 @@ def pantalla_historia_clinica(page: ft.Page):
         ),
         "nombre": ft.TextField(label="Nombre y apellidos"),
         "estado_civil": ft.TextField(label="Estado civil"),
-        "fecha_nacimiento": ft.TextField(label="Fecha de nacimiento"),
-        "edad": ft.TextField(label="Edad", input_filter=ft.NumbersOnlyInputFilter()),
+        "fecha_nacimiento": ft.TextField(label="Fecha de nacimiento",expand=True),
+        "edad": ft.TextField(label="Edad", input_filter=ft.NumbersOnlyInputFilter(),expand=True),
         "sexo": ft.Dropdown(
             label="Sexo",
             options=[
@@ -90,7 +98,7 @@ def pantalla_historia_clinica(page: ft.Page):
         ),
         "eps": ft.TextField(label="EPS"),
         "motivo": ft.TextField(label="Motivo de consulta", multiline=True, max_lines=3),
-        "enfermedad_actual": ft.TextField(label="Enfermedad actual", multiline=True, max_lines=3),
+        "enfermedad_actual": ft.TextField(label="Enfermedad actual", multiline=True, max_lines=10),
 
         # Antecedentes
         "patologicos": ft.TextField(label="Patológicos", multiline=True, max_lines=2),
@@ -136,7 +144,7 @@ def pantalla_historia_clinica(page: ft.Page):
         "musculo_esqueletico": ft.TextField(label="Músculo esquelético", multiline=True, max_lines=2),
         "dx": ft.TextField(label="DX", multiline=True, max_lines=2),
         "analisis": ft.TextField(label="Analisis", multiline=True, max_lines=2),
-        "plan_manejo": ft.TextField(label="Plan de manejo", multiline=True, max_lines=2),
+        "plan_manejo": ft.TextField(label="Plan de manejo", multiline=True, max_lines=10),
         "t": ft.TextField(label="T", width=90),
         "fc": ft.TextField(label="FC", width=90),
         "fr": ft.TextField(label="FR", width=90),
@@ -144,6 +152,17 @@ def pantalla_historia_clinica(page: ft.Page):
         "sao2": ft.TextField(label="SAO2", width=90),
         "fio2": ft.TextField(label="FIO2", width=90),
     }
+
+    # Define el texto por defecto al inicio de la función
+    plan_manejo_default = """Hospitalizar
+Toma de exámenes de laboratorio
+Solicitar RX de torax
+Toma de signos vitales cada 8-12 horas
+mantener hidratacion V/O o VI
+Oxigeno por canula nasal a 1 litro
+manejo del dolor acetaminofén 15 mg/kg cada 6 horas
+Aislamiento por gota
+"""
 
     # Variable para almacenar el archivo actual que se está editando (None si es nuevo)
     archivo_actual = None
@@ -278,8 +297,10 @@ def pantalla_historia_clinica(page: ft.Page):
                                 break
         else:
             # Campos vacíos para nueva historia
-            for campo in campos.values():
-                if isinstance(campo, ft.Dropdown):
+            for k, campo in campos.items():
+                if k == "plan_manejo":
+                    campo.value = plan_manejo_default
+                elif isinstance(campo, ft.Dropdown):
                     campo.value = None
                 else:
                     campo.value = ""
@@ -314,7 +335,15 @@ def pantalla_historia_clinica(page: ft.Page):
                     expand=True,
                 ),
                 campos["eps"],  # EPS debajo de la fila
-                campos["nombre"], campos["estado_civil"], campos["fecha_nacimiento"], campos["edad"],
+                campos["nombre"], campos["estado_civil"],
+                ft.Row(
+                    controls=[
+                        campos["fecha_nacimiento"],
+                        campos["edad"],
+                    ],
+                    spacing=10,
+                    expand=True,
+                ),
                 ft.Row(
                     controls=[
                         campos["sexo"],
@@ -522,7 +551,9 @@ def pantalla_historia_clinica(page: ft.Page):
         contenido += f"{datos['analisis']}\n"
 
         contenido += "\n## Plan de manejo\n"
-        contenido += f"{datos['plan_manejo']}\n"
+        for linea in datos['plan_manejo'].splitlines():
+            if linea.strip():
+                contenido += f"- {linea.strip()}\n"
 
         try:
             # Si editamos, sobreescribimos el archivo original; si es nuevo, escribimos con el nombre nuevo
