@@ -1,6 +1,4 @@
-<div align="center">
-    <img width="250" src="/src/assets/icon.png"/>
-</div>
+![Banner](img/banner.png)
 
 # MedCore
 
