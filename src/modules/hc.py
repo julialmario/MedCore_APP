@@ -6,6 +6,9 @@ import re
 RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "historias_clinicas"))
 os.makedirs(RUTA_HISTORIAS, exist_ok=True)
 
+FORMATOS_HC = ["General", "Pediátrico"]
+formato_seleccionado = {"valor": FORMATOS_HC[0]}
+
 def pantalla_historia_clinica(page: ft.Page):
     mensaje = ft.Text("", color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER)
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
@@ -158,6 +161,62 @@ def pantalla_historia_clinica(page: ft.Page):
         "sao2": ft.TextField(label="SAO2", width=90),
         "fio2": ft.TextField(label="FIO2", width=90),
     }
+
+    # Campos adicionales para pediatría
+    campos.update({
+        "hijo_de": ft.TextField(label="Hijo de"),
+        "documento_ped": ft.TextField(label="Documento"),
+        "episodio": ft.TextField(label="Episodio"),
+        "edad_materna": ft.TextField(label="Edad materna"),
+        "hemoclasificacion_ped": ft.TextField(label="Hemoclasificación"),
+        "edad_gestacional": ft.TextField(label="Edad gestacional"),
+        "fum": ft.TextField(label="FUM"),
+        "gestaciones": ft.TextField(label="Gestaciones"),
+        "controles_prenatales": ft.TextField(label="Controles prenatales"),
+        "vacunacion": ft.TextField(label="Vacunación"),
+        "ultima_ecografia": ft.TextField(label="Última ecografía"),
+        "ag_shb": ft.TextField(label="Ag-SHB"),
+        "vih": ft.TextField(label="VIH"),
+        "prueba_no_treponemica": ft.TextField(label="Prueba no treponemica materna"),
+        "prueba_treponemica": ft.TextField(label="Prueba treponemica materna"),
+        "toxoplasma": ft.TextField(label="Toxoplasma"),
+        "ptog": ft.TextField(label="PTOG"),
+        "cultivo_estreptococo": ft.TextField(label="Cultivo rectovaginal para estreptococo B agalactiae"),
+        "paraclinicos_maternos": ft.TextField(label="Paraclínicos maternos", multiline=True, max_lines=2),
+        "ginecobstetricos": ft.TextField(label="Ginecobstetricos"),
+        "patologicos_ped": ft.TextField(label="Patológicos"),
+        "quirurgicos_ped": ft.TextField(label="Quirúrgicos"),
+        "alergicos_ped": ft.TextField(label="Alérgicos"),
+        "toxicos": ft.TextField(label="Tóxicos"),
+        "farmacologicos": ft.TextField(label="Farmacológicos"),
+        "familiares_ped": ft.TextField(label="Familiares"),
+        "ruptura_membranas": ft.TextField(label="Ruptura de membranas"),
+        "analgesia_epidural": ft.TextField(label="Analgesia epidural"),
+        "medicamentos_ped": ft.TextField(label="Medicamentos"),
+        "maduracion_fetal": ft.TextField(label="Maduración fetal"),
+        "sexo_bebe": ft.TextField(label="Sexo del bebé"),
+        "fecha_nacimiento_bebe": ft.TextField(label="Fecha de nacimiento"),
+        "hora_nacimiento_bebe": ft.TextField(label="Hora de nacimiento"),
+        "tipo_parto": ft.TextField(label="Tipo de parto"),
+        "liquido_amniotico": ft.TextField(label="Líquido amniótico"),
+        "adaptacion_neonatal": ft.TextField(label="Adaptación neonatal", multiline=True, max_lines=3),
+        "apgar_minuto": ft.TextField(label="Apgar al minuto"),
+        "apgar_5min": ft.TextField(label="Apgar a los 5 minutos"),
+        "apgar_otros": ft.TextField(label="Apgar otros minutos"),
+        "ballard": ft.TextField(label="Ballard (semanas)"),
+        "peso_gramos": ft.TextField(label="Peso (g)"),
+        "peso_percentil": ft.TextField(label="Peso (percentil)"),
+        "talla_cm": ft.TextField(label="Talla (cm)"),
+        "talla_percentil": ft.TextField(label="Talla (percentil)"),
+        "pc_cm": ft.TextField(label="PC (cm)"),
+        "pc_percentil": ft.TextField(label="PC (percentil)"),
+        "pt_cm": ft.TextField(label="PT (cm)"),
+        "pa_cm": ft.TextField(label="PA (cm)"),
+        "diuresis": ft.TextField(label="Diuresis"),
+        "meconio": ft.TextField(label="Meconio"),
+        "diagnosticos_ped": ft.TextField(label="Diagnósticos", multiline=True, max_lines=2),
+        "plan_ped": ft.TextField(label="Plan", multiline=True, max_lines=3),
+    })
 
     # Define el texto por defecto al inicio de la función
     plan_manejo_default = """Hospitalizar
@@ -314,143 +373,193 @@ Aislamiento por gota
                     campo.value = None
                 else:
                     campo.value = ""
-
-        formulario = ft.Column(
-            controls=[
-                mensaje,  # Mensaje centrado arriba
-                ft.Row(
-                    controls=[
-                        ft.Text("Historia Clínica", size=24, weight="bold", expand=True),
-                        ft.IconButton(
-                            icon=ft.Icons.ARROW_BACK,
-                            tooltip="Volver a la lista",
-                            on_click=lambda e: mostrar_lista(),
-                        ),
-                        ft.IconButton(
-                            icon=ft.Icons.SAVE,
-                            tooltip="Guardar historia clínica",
-                            on_click=guardar_historia,
-                        ),
-                    ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN
-                ),
-                ft.Text("Datos personales", weight="bold"),
-                ft.Row(
-                    controls=[
-                        campos["documento"],
-                        campos["cama"],
-                        campos["fecha_historia"],
-                    ],
-                    spacing=10,
-                    expand=True,
-                ),
-                campos["eps"],  # EPS debajo de la fila
-                campos["nombre"], campos["estado_civil"],
-                ft.Row(
-                    controls=[
-                        campos["fecha_nacimiento"],
-                        campos["edad"],
-                    ],
-                    spacing=10,
-                    expand=True,
-                ),
-                ft.Row(
-                    controls=[
-                        campos["sexo"],
-                        campos["hemoclasificacion"],
-                    ],
-                    spacing=10,
-                    expand=True,
-                ),
-                campos["ocupacion"], campos["escolaridad"], campos["direccion"],
-                campos["nombre_acompanante"],
-                ft.Row(
-                    controls=[
-                        campos["parentesco_acompanante"],
-                        campos["fuente_info"],
-                    ],
-                    spacing=10,
-                    expand=True,
-                ),
-                campos["eps"],
-
-                ft.Text("Motivo de consulta", weight="bold"),
-                campos["motivo"],
-
-                ft.Text("Enfermedad actual", weight="bold"),
-                campos["enfermedad_actual"],
-
-                ft.Text("Antecedentes", weight="bold"),
-                campos["patologicos"], campos["infecciosos"], campos["alergias"], campos["hospitalizaciones"], campos["urgencias"],
-                campos["quirurgicos"], campos["transfusionales"], campos["traumaticos"], campos["zoo_contactos"], campos["epidemiologicos"],
-
-                ft.Text("No patológicos", weight="bold"),
-                campos["prenatales"], campos["alimentacion"], campos["crecimiento"], campos["inmunizaciones"], campos["sicosociales"], campos["escolaridad_no_pat"],
-
-                ft.Text("Familiares", weight="bold"),
-                campos["familiares_patologias"], campos["familiares_composicion"],
-
-                ft.Text("Revisión por sistemas", weight="bold"),
-                campos["revision_sistemas"],
-
-                ft.Text("Examen físico", weight="bold"),
-                campos["aspectos_generales"],
-                ft.Text("Signos vitales", weight="bold"),
-                ft.Container(
-                    content=ft.Row(
+        if formato_seleccionado["valor"] == "General":
+            formulario = ft.Column(
+                controls=[
+                    dropdown_formato,  # <-- Agrega esto arriba
+                    mensaje,  # Mensaje centrado arriba
+                    ft.Row(
                         controls=[
-                            campos["t"],
-                            campos["fc"],
-                            campos["fr"],
-                            campos["pa"],
-                            campos["sao2"],
-                            campos["fio2"],
+                            ft.Text("Historia Clínica", size=24, weight="bold", expand=True),
+                            ft.IconButton(
+                                icon=ft.Icons.ARROW_BACK,
+                                tooltip="Volver a la lista",
+                                on_click=lambda e: mostrar_lista(),
+                            ),
+                            ft.IconButton(
+                                icon=ft.Icons.SAVE,
+                                tooltip="Guardar historia clínica",
+                                on_click=guardar_historia,
+                            ),
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    ),
+                    ft.Text("Datos personales", weight="bold"),
+                    ft.Row(
+                        controls=[
+                            campos["documento"],
+                            campos["cama"],
+                            campos["fecha_historia"],
                         ],
                         spacing=10,
-                        alignment=ft.MainAxisAlignment.CENTER,
                         expand=True,
-                        wrap=True,
                     ),
-                    alignment=ft.alignment.center,
-                    expand=True,
-                    width=True,
-                    padding=ft.padding.symmetric(vertical=5),
-                ),
-                ft.Text("Antropometría", weight="bold"),  # <-- Nuevo título
-                ft.Container(
-                    content=ft.Row(
+                    campos["eps"],  # EPS debajo de la fila
+                    campos["nombre"], campos["estado_civil"],
+                    ft.Row(
                         controls=[
-                            campos["peso"],
-                            campos["talla"],
+                            campos["fecha_nacimiento"],
+                            campos["edad"],
                         ],
                         spacing=10,
-                        alignment=ft.MainAxisAlignment.CENTER,
                         expand=True,
-                        wrap=True,
                     ),
-                    alignment=ft.alignment.center,
-                    expand=True,
-                    width=True,
-                    padding=ft.padding.symmetric(vertical=5),
-                ),
-                ft.Text("Examen físico por sistemas", weight="bold"),  # <-- Nuevo título
-                campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
-                campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
-                campos["neuromuscular"], campos["musculo_esqueletico"],
+                    ft.Row(
+                        controls=[
+                            campos["sexo"],
+                            campos["hemoclasificacion"],
+                        ],
+                        spacing=10,
+                        expand=True,
+                    ),
+                    campos["ocupacion"], campos["escolaridad"], campos["direccion"],
+                    campos["nombre_acompanante"],
+                    ft.Row(
+                        controls=[
+                            campos["parentesco_acompanante"],
+                            campos["fuente_info"],
+                        ],
+                        spacing=10,
+                        expand=True,
+                    ),
+                    campos["eps"],
 
-                ft.Text("DX", weight="bold"),
-                campos["dx"],
+                    ft.Text("Motivo de consulta", weight="bold"),
+                    campos["motivo"],
 
-                ft.Text("Análisis", weight="bold"),
-                campos["analisis"],
+                    ft.Text("Enfermedad actual", weight="bold"),
+                    campos["enfermedad_actual"],
 
-                ft.Text("Plan de manejo", weight="bold"),
-                campos["plan_manejo"],
-            ],
-            spacing=15,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centra los hijos del formulario
-        )
+                    ft.Text("Antecedentes", weight="bold"),
+                    campos["patologicos"], campos["infecciosos"], campos["alergias"], campos["hospitalizaciones"], campos["urgencias"],
+                    campos["quirurgicos"], campos["transfusionales"], campos["traumaticos"], campos["zoo_contactos"], campos["epidemiologicos"],
 
+                    ft.Text("No patológicos", weight="bold"),
+                    campos["prenatales"], campos["alimentacion"], campos["crecimiento"], campos["inmunizaciones"], campos["sicosociales"], campos["escolaridad_no_pat"],
+
+                    ft.Text("Familiares", weight="bold"),
+                    campos["familiares_patologias"], campos["familiares_composicion"],
+
+                    ft.Text("Revisión por sistemas", weight="bold"),
+                    campos["revision_sistemas"],
+
+                    ft.Text("Examen físico", weight="bold"),
+                    campos["aspectos_generales"],
+                    ft.Text("Signos vitales", weight="bold"),
+                    ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                campos["t"],
+                                campos["fc"],
+                                campos["fr"],
+                                campos["pa"],
+                                campos["sao2"],
+                                campos["fio2"],
+                            ],
+                            spacing=10,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            expand=True,
+                            wrap=True,
+                        ),
+                        alignment=ft.alignment.center,
+                        expand=True,
+                        width=True,
+                        padding=ft.padding.symmetric(vertical=5),
+                    ),
+                    ft.Text("Antropometría", weight="bold"),  # <-- Nuevo título
+                    ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                campos["peso"],
+                                campos["talla"],
+                            ],
+                            spacing=10,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            expand=True,
+                            wrap=True,
+                        ),
+                        alignment=ft.alignment.center,
+                        expand=True,
+                        width=True,
+                        padding=ft.padding.symmetric(vertical=5),
+                    ),
+                    ft.Text("Examen físico por sistemas", weight="bold"),  # <-- Nuevo título
+                    campos["piel"], campos["cabeza"], campos["ojos"], campos["boca"],
+                    campos["oidos"], campos["nariz"], campos["cuello"], campos["cardiopulmonar"], campos["abdomen"],
+                    campos["neuromuscular"], campos["musculo_esqueletico"],
+
+                    ft.Text("DX", weight="bold"),
+                    campos["dx"],
+
+                    ft.Text("Análisis", weight="bold"),
+                    campos["analisis"],
+
+                    ft.Text("Plan de manejo", weight="bold"),
+                    campos["plan_manejo"],
+                ],
+                spacing=15,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centra los hijos del formulario
+            )
+        elif formato_seleccionado["valor"] == "Pediátrico":
+            formulario = ft.Column(
+                controls=[
+                    dropdown_formato,
+                    mensaje,
+                    ft.Row(
+                        controls=[
+                            ft.Text("Historia Clínica Pediátrica", size=24, weight="bold", expand=True),
+                            ft.IconButton(
+                                icon=ft.Icons.ARROW_BACK,
+                                tooltip="Volver a la lista",
+                                on_click=lambda e: mostrar_lista(),
+                            ),
+                            ft.IconButton(
+                                icon=ft.Icons.SAVE,
+                                tooltip="Guardar historia clínica",
+                                on_click=guardar_historia,
+                            ),
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    ),
+                    ft.Text("Datos maternos y perinatales", weight="bold"),
+                    campos["hijo_de"], campos["documento_ped"], campos["episodio"], campos["edad_materna"], campos["hemoclasificacion_ped"],
+                    campos["edad_gestacional"], campos["fum"], campos["gestaciones"], campos["controles_prenatales"], campos["vacunacion"],
+                    ft.Text("Última ecografía", weight="bold"),
+                    campos["ultima_ecografia"],
+                    ft.Text("ETS maternas", weight="bold"),
+                    campos["ag_shb"], campos["vih"], campos["prueba_no_treponemica"], campos["prueba_treponemica"], campos["toxoplasma"], campos["ptog"], campos["cultivo_estreptococo"],
+                    campos["paraclinicos_maternos"],
+                    ft.Text("Antecedentes personales", weight="bold"),
+                    campos["ginecobstetricos"], campos["patologicos_ped"], campos["quirurgicos_ped"], campos["alergicos_ped"], campos["toxicos"], campos["farmacologicos"], campos["familiares_ped"],
+                    campos["ruptura_membranas"], campos["analgesia_epidural"], campos["medicamentos_ped"], campos["maduracion_fetal"],
+                    ft.Text("Nacimiento", weight="bold"),
+                    campos["sexo_bebe"], campos["fecha_nacimiento_bebe"], campos["hora_nacimiento_bebe"], campos["tipo_parto"], campos["liquido_amniotico"],
+                    ft.Text("Adaptación neonatal", weight="bold"),
+                    campos["adaptacion_neonatal"],
+                    ft.Text("Examen físico", weight="bold"),
+                    campos["apgar_minuto"], campos["apgar_5min"], campos["apgar_otros"], campos["ballard"],
+                    campos["peso_gramos"], campos["peso_percentil"], campos["talla_cm"], campos["talla_percentil"],
+                    campos["pc_cm"], campos["pc_percentil"], campos["pt_cm"], campos["pa_cm"],
+                    campos["diuresis"], campos["meconio"],
+                    ft.Text("Diagnósticos", weight="bold"),
+                    campos["diagnosticos_ped"],
+                    ft.Text("Plan", weight="bold"),
+                    campos["plan_ped"],
+                ],
+                spacing=15,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        
         contenedor_formulario = ft.Container(
             content=formulario,
             padding=20,
@@ -478,96 +587,152 @@ Aislamiento por gota
 
     def guardar_historia(e, autoguardado=False):
         datos = {k: v.value for k, v in campos.items()}
+        formato = formato_seleccionado["valor"]
 
         # Validación básica
-        nombre = campos["nombre"].value.strip()
-        if not nombre:
-            mensaje.value = "Debes ingresar el nombre y apellidos del paciente."
-            mensaje.color = ft.Colors.RED
-            page.update()
-            return
-
-        # Validación de fecha
-        fecha = campos["fecha_historia"].value.strip()
-        if not re.match(r"^\d{4}-\d{2}-\d{2}$", fecha):
-            mensaje.value = "La fecha debe tener el formato YYYY-MM-DD."
-            mensaje.color = ft.Colors.RED
-            page.update()
-            return
-        try:
-            anio, mes, dia = map(int, fecha.split("-"))
-            if not (1 <= mes <= 12):
-                raise ValueError
-            if not (1 <= dia <= 31):
-                raise ValueError
-            # Si la fecha es válida, limpia el mensaje de error si lo hay
-            if mensaje.value.startswith("La fecha"):
+        if formato == "General":
+            nombre = campos["nombre"].value.strip()
+            if not nombre:
+                mensaje.value = "Debes ingresar el nombre y apellidos del paciente."
+                mensaje.color = ft.Colors.RED
+                page.update()
+                return
+        elif formato == "Pediátrico":
+            hijo_de = campos["hijo_de"].value.strip()
+            edad_gestacional = campos["edad_gestacional"].value.strip()
+            if not hijo_de or not edad_gestacional:
+                mensaje.value = "Debes ingresar los campos 'Hijo de' y 'Edad gestacional'."
+                mensaje.color = ft.Colors.RED
+                page.update()
+                return
+            # Si ambos campos están completos y el mensaje era de esos campos, límpialo
+            if mensaje.value == "Debes ingresar los campos 'Hijo de' y 'Edad gestacional'.":
                 mensaje.value = ""
                 page.update()
-        except Exception:
-            mensaje.value = "La fecha debe ser válida (año, mes 1-12, día 1-31)."
-            mensaje.color = ft.Colors.RED
-            page.update()
-            return
+        nombre = hijo_de
+
+        # Validación de fecha (solo si existe el campo)
+        if "fecha_historia" in campos:
+            fecha = campos["fecha_historia"].value.strip()
+            if fecha and not re.match(r"^\d{4}-\d{2}-\d{2}$", fecha):
+                mensaje.value = "La fecha debe tener el formato YYYY-MM-DD."
+                mensaje.color = ft.Colors.RED
+                page.update()
+                return
+            try:
+                if fecha:
+                    anio, mes, dia = map(int, fecha.split("-"))
+                    if not (1 <= mes <= 12):
+                        raise ValueError
+                    if not (1 <= dia <= 31):
+                        raise ValueError
+                    if mensaje.value.startswith("La fecha"):
+                        mensaje.value = ""
+                        page.update()
+            except Exception:
+                mensaje.value = "La fecha debe ser válida (año, mes 1-12, día 1-31)."
+                mensaje.color = ft.Colors.RED
+                page.update()
+                return
 
         nombre_archivo = nombre.replace(" ", "_") + ".md"
         ruta_archivo = os.path.join(RUTA_HISTORIAS, nombre_archivo)
 
         # Estructura Markdown
-        contenido = f"# Historia Clínica\n\n"
-        contenido += f"## Datos personales\n\n"
-        for k in [
-            "documento", "cama", "fecha_historia", "eps",
-            "nombre", "estado_civil", "fecha_nacimiento", "edad", "sexo", "hemoclasificacion",
-            "ocupacion", "escolaridad", "direccion", "nombre_acompanante", "parentesco_acompanante", "fuente_info"
-        ]:
-            contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+        contenido = f"<!-- FORMATO: {formato} -->\n"  # <--- Guarda el formato aquí
+        contenido += f"# Historia Clínica\n\n"
 
-        contenido += "\n## Motivo de consulta\n"
-        contenido += f"{datos['motivo']}\n"
+        if formato == "General":
+            for k in [
+                "documento", "cama", "fecha_historia", "eps",
+                "nombre", "estado_civil", "fecha_nacimiento", "edad", "sexo", "hemoclasificacion",
+                "ocupacion", "escolaridad", "direccion", "nombre_acompanante", "parentesco_acompanante", "fuente_info"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
 
-        contenido += "\n## Enfermedad actual\n"
-        contenido += f"{datos['enfermedad_actual']}\n"
+            contenido += "\n## Motivo de consulta\n"
+            contenido += f"{datos['motivo']}\n"
 
-        contenido += "\n## Antecedentes\n"
-        for k in [
-            "patologicos", "infecciosos", "alergias", "hospitalizaciones", "urgencias", "quirurgicos",
-            "transfusionales", "traumaticos", "zoo_contactos", "epidemiologicos"
-        ]:
-            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
+            contenido += "\n## Enfermedad actual\n"
+            contenido += f"{datos['enfermedad_actual']}\n"
 
-        contenido += "\n### No patológicos\n"
-        for k in [
-            "prenatales", "alimentacion", "crecimiento", "inmunizaciones", "sicosociales", "escolaridad_no_pat"
-        ]:
-            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
+            contenido += "\n## Antecedentes\n"
+            for k in [
+                "patologicos", "infecciosos", "alergias", "hospitalizaciones", "urgencias", "quirurgicos",
+                "transfusionales", "traumaticos", "zoo_contactos", "epidemiologicos"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
-        contenido += "\n### Familiares\n"
-        for k in ["familiares_patologias", "familiares_composicion"]:
-            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
+            contenido += "\n### No patológicos\n"
+            for k in [
+                "prenatales", "alimentacion", "crecimiento", "inmunizaciones", "sicosociales", "escolaridad_no_pat"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
-        contenido += "\n## Revisión por sistemas\n"
-        contenido += f"{datos['revision_sistemas']}\n"
+            contenido += "\n### Familiares\n"
+            for k in ["familiares_patologias", "familiares_composicion"]:
+                contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
-        contenido += "\n## Examen físico\n"
-        for k in [
-            "aspectos_generales",
-            "t", "fc", "fr", "pa", "sao2", "fio2",  # signos vitales individuales
-            "peso", "talla", "piel", "cabeza", "ojos", "boca", "oidos", "nariz", "cuello",
-            "cardiopulmonar", "abdomen", "neuromuscular", "musculo_esqueletico"
-        ]:
-            contenido += f"- **{campos[k].label}:** {datos[k]}\n"
+            contenido += "\n## Revisión por sistemas\n"
+            contenido += f"{datos['revision_sistemas']}\n"
 
-        contenido += "\n## DX\n"
-        contenido += f"{datos['dx']}\n"
+            contenido += "\n## Examen físico\n"
+            for k in [
+                "aspectos_generales",
+                "t", "fc", "fr", "pa", "sao2", "fio2",  # signos vitales individuales
+                "peso", "talla", "piel", "cabeza", "ojos", "boca", "oidos", "nariz", "cuello",
+                "cardiopulmonar", "abdomen", "neuromuscular", "musculo_esqueletico"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos[k]}\n"
 
-        contenido += "\n## Análisis\n"
-        contenido += f"{datos['analisis']}\n"
+            contenido += "\n## DX\n"
+            contenido += f"{datos['dx']}\n"
 
-        contenido += "\n## Plan de manejo\n"
-        for linea in datos['plan_manejo'].splitlines():
-            if linea.strip():
-                contenido += f"- {linea.strip()}\n"
+            contenido += "\n## Análisis\n"
+            contenido += f"{datos['analisis']}\n"
+
+            contenido += "\n## Plan de manejo\n"
+            for linea in datos['plan_manejo'].splitlines():
+                if linea.strip():
+                    contenido += f"- {linea.strip()}\n"
+        elif formato == "Pediátrico":
+            contenido += f"## Datos maternos y perinatales\n"
+            for k in [
+                "hijo_de", "documento_ped", "episodio", "edad_materna", "hemoclasificacion_ped",
+                "edad_gestacional", "fum", "gestaciones", "controles_prenatales", "vacunacion"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+            contenido += "\n### Última ecografía\n"
+            contenido += f"- **{campos['ultima_ecografia'].label}:** {datos.get('ultima_ecografia', '')}\n"
+            contenido += "\n### ETS maternas\n"
+            for k in [
+                "ag_shb", "vih", "prueba_no_treponemica", "prueba_treponemica", "toxoplasma", "ptog", "cultivo_estreptococo"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+            contenido += f"- **{campos['paraclinicos_maternos'].label}:** {datos.get('paraclinicos_maternos', '')}\n"
+            contenido += "\n### Antecedentes personales\n"
+            for k in [
+                "ginecobstetricos", "patologicos_ped", "quirurgicos_ped", "alergicos_ped", "toxicos", "farmacologicos", "familiares_ped",
+                "ruptura_membranas", "analgesia_epidural", "medicamentos_ped", "maduracion_fetal"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+            contenido += "\n### Nacimiento\n"
+            for k in [
+                "sexo_bebe", "fecha_nacimiento_bebe", "hora_nacimiento_bebe", "tipo_parto", "liquido_amniotico"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+            contenido += "\n### Adaptación neonatal\n"
+            contenido += f"- **{campos['adaptacion_neonatal'].label}:** {datos.get('adaptacion_neonatal', '')}\n"
+            contenido += "\n### Examen físico\n"
+            for k in [
+                "apgar_minuto", "apgar_5min", "apgar_otros", "ballard", "peso_gramos", "peso_percentil", "talla_cm", "talla_percentil",
+                "pc_cm", "pc_percentil", "pt_cm", "pa_cm", "diuresis", "meconio"
+            ]:
+                contenido += f"- **{campos[k].label}:** {datos.get(k, '')}\n"
+            contenido += "\n### Diagnósticos\n"
+            contenido += f"{datos.get('diagnosticos_ped', '')}\n"
+            contenido += "\n### Plan\n"
+            contenido += f"{datos.get('plan_ped', '')}\n"
 
         try:
             if archivo_actual and archivo_actual != nombre_archivo:
@@ -722,6 +887,18 @@ Aislamiento por gota
                 vista_principal.controls.append(card)
 
         page.update()
+
+    def on_formato_change(e):
+        formato_seleccionado["valor"] = e.control.value
+        mostrar_formulario()  # Recarga el formulario con el nuevo formato
+
+    dropdown_formato = ft.Dropdown(
+        label="Formato de historia clínica",
+        value=formato_seleccionado["valor"],
+        options=[ft.dropdown.Option(f) for f in FORMATOS_HC],
+        on_change=on_formato_change,
+        expand=True
+    )
 
     mostrar_lista()
     return vista_principal
