@@ -120,7 +120,7 @@ medcore_app/
     * [x] Sodio corregido
 * [ ] Base de datos medicamentos
 * [x] Búsqueda interactiva por nombre o etiqueta
-* [ ] Pearls guías Americanas, Europeas y Colombianas
+* [ ] Añade las guias que quieras para que todo este en un solo lugar
 * [x] Creador de historias clínicas
     * [x] Elegir formatos de historias clinicas
     * [ ] Exportar historias clínicas a PDF/Markdown
