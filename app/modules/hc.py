@@ -788,7 +788,7 @@ Aislamiento por gota
         encabezado = ft.Container(
             content=ft.Row(
                 controls=[
-                    ft.Text("Historias clínicas", size=25, weight="bold", expand=True),
+                    ft.Text("Mi archivo clinico", size=25, weight="bold", expand=True),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
                         icon_color=ft.Colors.WHITE,
