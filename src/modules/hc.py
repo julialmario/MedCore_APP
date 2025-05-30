@@ -11,6 +11,12 @@ def pantalla_historia_clinica(page: ft.Page):
     vista_principal = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
     formulario_abierto = {"abierto": False}
+    autoguardado_activo = {"activo": False}
+
+    async def autoguardado_loop():
+        while autoguardado_activo["activo"]:
+            guardar_historia(None, autoguardado=True)
+            await asyncio.sleep(1)
 
     def on_fecha_change(e):
         valor = campos["fecha_historia"].value
@@ -250,6 +256,10 @@ Aislamiento por gota
         vista_principal.controls.clear()
         archivo_actual = archivo if editar else None
 
+        # Inicia el autoguardado
+        autoguardado_activo["activo"] = True
+        page.run_task(autoguardado_loop)
+
         if editar and archivo_actual:
             contenido = leer_archivo_md(archivo_actual)
             lines = contenido.splitlines()
@@ -466,7 +476,7 @@ Aislamiento por gota
         mensaje.value = ""
         page.update()
 
-    def guardar_historia(e):
+    def guardar_historia(e, autoguardado=False):
         datos = {k: v.value for k, v in campos.items()}
 
         # Validación básica
@@ -490,6 +500,10 @@ Aislamiento por gota
                 raise ValueError
             if not (1 <= dia <= 31):
                 raise ValueError
+            # Si la fecha es válida, limpia el mensaje de error si lo hay
+            if mensaje.value.startswith("La fecha"):
+                mensaje.value = ""
+                page.update()
         except Exception:
             mensaje.value = "La fecha debe ser válida (año, mes 1-12, día 1-31)."
             mensaje.color = ft.Colors.RED
@@ -556,32 +570,27 @@ Aislamiento por gota
                 contenido += f"- {linea.strip()}\n"
 
         try:
-            # Si editamos, sobreescribimos el archivo original; si es nuevo, escribimos con el nombre nuevo
             if archivo_actual and archivo_actual != nombre_archivo:
                 os.remove(os.path.join(RUTA_HISTORIAS, archivo_actual))
             with open(ruta_archivo, "w", encoding="utf-8") as f:
                 f.write(contenido)
 
-            # Limpiar campos después de guardar
-            for campo in campos.values():
-                if isinstance(campo, ft.Dropdown):
-                    campo.value = None
-                else:
-                    campo.value = ""
-
-            mensaje.value = "Historia guardada correctamente."
-            mensaje.color = ft.Colors.GREEN
-            page.update()
-            # Mostrar la lista inmediatamente después de guardar
-            mostrar_lista()
-
-            # Si quieres que el mensaje desaparezca después de volver a la lista:
-            page.run_task(ocultar_mensaje)
+            if not autoguardado:
+                mensaje.value = "Historia guardada correctamente."
+                mensaje.color = ft.Colors.GREEN
+                page.update()
+                page.run_task(ocultar_mensaje)
+            # Si es autoguardado, no mostrar mensaje
 
         except Exception as err:
             mensaje.value = f"Error al guardar: {err}"
             mensaje.color = ft.Colors.RED
             page.update()
+
+    async def limpiar_mensaje_si_valido():
+        await asyncio.sleep(1)
+        mensaje.value = ""
+        page.update()
 
     # Diálogo de confirmación eliminación (igual que antes)
     confirm_dialog = ft.AlertDialog(
@@ -622,6 +631,8 @@ Aislamiento por gota
         page.open(confirm_dialog)
 
     def mostrar_lista():
+        # Detiene el autoguardado al salir del formulario
+        autoguardado_activo["activo"] = False
         vista_principal.controls.clear()
 
         encabezado = ft.Container(
@@ -714,5 +725,3 @@ Aislamiento por gota
 
     mostrar_lista()
     return vista_principal
-
-
