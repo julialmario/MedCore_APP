@@ -1,8 +1,8 @@
 import os
 import flet as ft
 
-RUTA_GUIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "pearls"))
-
+RUTA_GUIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "storage", "data", "pearls"))
+os.makedirs(RUTA_GUIAS, exist_ok=True)
 
 def listar_guias_md():
     archivos = []

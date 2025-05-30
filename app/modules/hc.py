@@ -3,7 +3,7 @@ import flet as ft
 import asyncio
 import re
 
-RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "data", "historias_clinicas"))
+RUTA_HISTORIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "storage", "data", "historias_clinicas"))
 os.makedirs(RUTA_HISTORIAS, exist_ok=True)
 
 FORMATOS_HC = ["General", "Pediátrico"]
