@@ -66,10 +66,15 @@ def pantalla_home(page: ft.Page):
                         content=ft.Container(
                             content=ft.Row([
                                 miniatura if miniatura else ft.Icon(ft.icons.PICTURE_AS_PDF, size=40),
+                                ft.IconButton(
+                                    icon=ft.Icons.EDIT,
+                                    tooltip="Renombrar PDF",
+                                    on_click=lambda e, archivo=archivo: renombrar_pdf(archivo)
+                                ),
                                 ft.ListTile(
                                     title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
                                     on_click=lambda e, a=archivo: ver_pdf(a)
-                            ),
+                                ),
                             ], alignment=ft.MainAxisAlignment.START),
                             padding=20
                         ),
@@ -191,6 +196,41 @@ def pantalla_home(page: ft.Page):
 
         render_pagina(pagina_actual["index"])  # Mostrar primera página
         page.update()
+
+    def renombrar_pdf(archivo):
+        nombre_actual = os.path.splitext(archivo)[0]
+        nuevo_nombre = ft.TextField(label="Nuevo nombre", value=nombre_actual, expand=True)
+
+        def confirmar_renombrar(ev):
+            nuevo = nuevo_nombre.value.strip()
+            if not nuevo:
+                page.snack_bar = ft.SnackBar(ft.Text("El nombre no puede estar vacío."), bgcolor=ft.Colors.RED)
+                page.snack_bar.open = True
+                page.update()
+                return
+            nuevo_archivo = nuevo + ".pdf"
+            destino = os.path.join(RUTA_PDFS, nuevo_archivo)
+            if os.path.exists(destino):
+                page.snack_bar = ft.SnackBar(ft.Text("Ya existe un PDF con ese nombre."), bgcolor=ft.Colors.RED)
+                page.snack_bar.open = True
+                page.update()
+                return
+            os.rename(os.path.join(RUTA_PDFS, archivo), destino)
+            page.close(dialogo_renombrar)
+            construir_tarjetas()
+            page.update()
+
+        dialogo_renombrar = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Renombrar PDF"),
+            content=nuevo_nombre,
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda e: page.close(dialogo_renombrar)),
+                ft.TextButton("Renombrar", on_click=confirmar_renombrar),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.open(dialogo_renombrar)
 
     mostrar_lista()
     return contenido_principal
