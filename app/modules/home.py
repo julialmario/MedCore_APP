@@ -171,11 +171,11 @@ def pantalla_home(page: ft.Page):
                 temp_path = os.path.join(tempfile.gettempdir(), f"{nombre_pdf}_pagina_{index}.png")
                 imagen.save(temp_path, "PNG")
                 imagen_mostrada.current.src = temp_path
-                indice_pagina.current.value = f"Página {index + 1} de {total_paginas}"
+                indice_pagina.current.value = f"{index + 1} / {total_paginas}"
                 page.update()
             except Exception as e:
                 imagen_mostrada.current.src = ""
-                indice_pagina.current.value = f"Error cargando página: {e}"
+                indice_pagina.current.value = f"Error: {e}"
                 page.update()
 
         def siguiente(e):
@@ -188,11 +188,43 @@ def pantalla_home(page: ft.Page):
                 pagina_actual["index"] -= 1
                 render_pagina(pagina_actual["index"])
 
-        titulo = ft.Text(
-            os.path.splitext(nombre_pdf)[0],
-            size=20,
-            weight="bold",
-            text_align=ft.TextAlign.CENTER
+        # Barra de navegación de páginas con iconos grandes y organización
+        barra_nav = ft.Row(
+            controls=[
+                # Izquierda: botón volver
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    tooltip="Volver a la lista",
+                    on_click=lambda e: mostrar_lista(),
+                    icon_size=32,
+                ),
+                # Centro: navegación de páginas
+                ft.Row(
+                    controls=[
+                        ft.IconButton(
+                            icon=ft.Icons.CHEVRON_LEFT,
+                            tooltip="Página anterior",
+                            on_click=anterior,
+                            icon_size=32,
+                        ),
+                        ft.Text(ref=indice_pagina, size=20, weight="bold"),
+                        ft.IconButton(
+                            icon=ft.Icons.CHEVRON_RIGHT,
+                            tooltip="Página siguiente",
+                            on_click=siguiente,
+                            icon_size=32,
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                ),
+                # Derecha: espacio vacío para mantener centrado el centro
+                ft.Container(width=40),
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=10,
         )
 
         imagen = ft.Image(ref=imagen_mostrada, fit=ft.ImageFit.CONTAIN, width=page.width * 0.9)
@@ -204,21 +236,9 @@ def pantalla_home(page: ft.Page):
             max_scale=5.0
         )
 
-        pagina_info = ft.Text(ref=indice_pagina)
-
-        botones_nav = ft.Row([
-            ft.ElevatedButton("Anterior", on_click=anterior),
-            pagina_info,
-            ft.ElevatedButton("Siguiente", on_click=siguiente)
-        ], alignment=ft.MainAxisAlignment.CENTER)
-
-        btn_volver = ft.ElevatedButton("Volver a la lista", on_click=lambda e: mostrar_lista())
-
         contenido_principal.content.controls.extend([
-            titulo,
+            barra_nav,
             imagen_interactiva,
-            botones_nav,
-            btn_volver
         ])
 
         render_pagina(pagina_actual["index"])  # Mostrar primera página
