@@ -42,7 +42,7 @@ def pantalla_home(page: ft.Page):
         archivos = listar_pdfs()
         if not archivos:
             lista_tarjetas.controls.append(
-                ft.Text("No hay guías PDF subidas.", size=16, color=ft.Colors.RED)
+                ft.Text("No tienes guias subidas", size=16, color=ft.Colors.RED)
             )
         else:
             filtro = filtro.lower()
@@ -65,23 +65,35 @@ def pantalla_home(page: ft.Page):
                     card = ft.Card(
                         content=ft.Container(
                             content=ft.Row([
-                                miniatura if miniatura else ft.Icon(ft.icons.PICTURE_AS_PDF, size=40),
-                                ft.IconButton(
-                                    icon=ft.Icons.EDIT,
-                                    tooltip="Renombrar PDF",
-                                    on_click=lambda e, archivo=archivo: renombrar_pdf(archivo)
-                                ),
-                                ft.ListTile(
-                                    title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
-                                    on_click=lambda e, a=archivo: ver_pdf(a)
-                                ),
-                            ], alignment=ft.MainAxisAlignment.START),
+                                # Izquierda: miniatura + título
+                                ft.Row([
+                                    miniatura if miniatura else ft.Icon(ft.icons.PICTURE_AS_PDF, size=40),
+                                    ft.ListTile(
+                                        title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
+                                        on_click=lambda e, a=archivo: ver_pdf(a)
+                                    ),
+                                ], alignment=ft.MainAxisAlignment.START, expand=True),
+                                # Derecha: botones
+                                ft.Row([
+                                    ft.IconButton(
+                                        icon=ft.Icons.EDIT,
+                                        tooltip="Renombrar PDF",
+                                        on_click=lambda e, archivo=archivo: renombrar_pdf(archivo)
+                                    ),
+                                    ft.IconButton(
+                                        icon=ft.Icons.DELETE,
+                                        icon_color=ft.Colors.RED,
+                                        tooltip="Eliminar PDF",
+                                        on_click=lambda e, archivo=archivo: eliminar_pdf(archivo)
+                                    ),
+                                ], alignment=ft.MainAxisAlignment.END),
+                            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                             padding=20
                         ),
                         expand=True,
                     )
                     lista_tarjetas.controls.append(
-                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER, width=500, expand=True)
+                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER, width=700, expand=True)
                     )
         page.update()
 
@@ -100,16 +112,31 @@ def pantalla_home(page: ft.Page):
             expand=True,
         )
 
-        titulo = ft.Text("Tus Guías PDF", size=25, weight="bold", text_align=ft.TextAlign.CENTER)
+        btn_subir = ft.IconButton(
+            icon=ft.Icons.UPLOAD_FILE,
+            tooltip="Subir PDF",
+            on_click=subir_pdf,
+            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8))
+        )
 
-        btn_subir = ft.ElevatedButton("Subir PDF", icon=ft.Icons.UPLOAD_FILE, on_click=subir_pdf)
+        titulo = ft.Text("Mis guias", size=25, weight="bold", text_align=ft.TextAlign.CENTER)
 
         construir_tarjetas()
 
+        # Barra de búsqueda y botón subir en la misma fila
+        barra_superior = ft.Row(
+            controls=[
+                ft.Container(content=search_bar, expand=True),
+                btn_subir
+            ],
+            alignment=ft.MainAxisAlignment.END,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            expand=True
+        )
+
         contenido_principal.content.controls.extend([
             titulo,
-            ft.Container(content=search_bar, padding=15, alignment=ft.alignment.center),
-            btn_subir,
+            barra_superior,
             lista_tarjetas
         ])
         page.update()
@@ -231,6 +258,27 @@ def pantalla_home(page: ft.Page):
             actions_alignment=ft.MainAxisAlignment.END,
         )
         page.open(dialogo_renombrar)
+
+    def eliminar_pdf(archivo):
+        ruta_pdf = os.path.join(RUTA_PDFS, archivo)
+
+        def confirmar_eliminar(ev):
+            os.remove(ruta_pdf)
+            page.close(dialogo_eliminar)
+            construir_tarjetas()
+            page.update()
+
+        dialogo_eliminar = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Eliminar PDF"),
+            content=ft.Text(f"¿Estás seguro de que deseas eliminar '{archivo}'?", size=16),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda e: page.close(dialogo_eliminar)),
+                ft.TextButton("Eliminar", on_click=confirmar_eliminar),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.open(dialogo_eliminar)
 
     mostrar_lista()
     return contenido_principal
