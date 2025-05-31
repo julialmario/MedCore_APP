@@ -832,17 +832,13 @@ Aislamiento por gota
             for archivo in archivos:
                 nombre = os.path.splitext(archivo)[0]
 
-                # El texto con on_click para mostrar la historia
-                boton_nombre = ft.TextButton(
-                    text=nombre,
-                    expand=True,
-                    style=ft.ButtonStyle(text_style=ft.TextStyle(size=16)),
-                    on_click=lambda e, a=archivo: ver_historia(a),
-                )
-
                 fila = ft.Row(
                     controls=[
-                        boton_nombre,
+                        ft.Container(
+                            content=ft.Text(nombre, size=18, weight="bold"),
+                            alignment=ft.alignment.center,
+                            expand=True
+                        ),
                         ft.IconButton(
                             icon=ft.Icons.EDIT,
                             tooltip="Editar historia",
@@ -859,11 +855,11 @@ Aislamiento por gota
                     spacing=5,
                 )
 
-
                 card = ft.Card(
                     content=ft.Container(
                         content=fila,
-                        padding=10
+                        padding=10,
+                        on_click=lambda e, a=archivo: ver_historia(a),
                     ),
                     margin=ft.margin.symmetric(vertical=5, horizontal=10),
                     elevation=2,
