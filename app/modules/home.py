@@ -1,69 +1,86 @@
 import os
+import tempfile
 import flet as ft
+from pdf2image import convert_from_path
+from PyPDF2 import PdfReader  # Asegúrate de tener instalado PyPDF2
+import hashlib
 
-RUTA_GUIAS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "storage", "data", "pearls"))
-os.makedirs(RUTA_GUIAS, exist_ok=True)
+# Carpeta donde se almacenan los PDFs
+RUTA_PDFS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "storage", "data", "guias"))
+os.makedirs(RUTA_PDFS, exist_ok=True)
 
-def listar_guias_md():
-    archivos = []
-    if os.path.exists(RUTA_GUIAS):
-        for f in os.listdir(RUTA_GUIAS):
-            if f.endswith(".md"):
-                archivos.append(f)
-    return archivos
-
-def leer_guia_md(nombre_archivo):
-    try:
-        with open(os.path.join(RUTA_GUIAS, nombre_archivo), "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        return f"Error leyendo archivo: {e}"
+def listar_pdfs():
+    return [f for f in os.listdir(RUTA_PDFS) if f.lower().endswith(".pdf")]
 
 def pantalla_home(page: ft.Page):
-    # Envolver contenido principal en Container para separar bordes ventana
     contenido_principal = ft.Container(
         content=ft.Column(
             expand=True,
             scroll=ft.ScrollMode.AUTO,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         ),
-        padding=ft.padding.symmetric(horizontal=30),  # Separación horizontal desde borde ventana
+        padding=ft.padding.symmetric(horizontal=30),
         expand=True,
     )
 
-    seleccion_actual = {"archivo": None, "contenido": None}
     lista_tarjetas = ft.Column(spacing=10, expand=True)
+
+    def on_result(ev: ft.FilePickerResultEvent):
+        if ev.files:
+            for f in ev.files:
+                destino = os.path.join(RUTA_PDFS, f.name)
+                with open(destino, "wb") as out_file, open(f.path, "rb") as in_file:
+                    out_file.write(in_file.read())
+            construir_tarjetas()
+            page.update()
+
+    file_picker = ft.FilePicker(on_result=on_result)
+    page.overlay.append(file_picker)
 
     def construir_tarjetas(filtro=""):
         lista_tarjetas.controls.clear()
-        archivos = listar_guias_md()
-
+        archivos = listar_pdfs()
         if not archivos:
             lista_tarjetas.controls.append(
-                ft.Text("No hay guías markdown en assets/guias", size=16, color=ft.Colors.RED)
+                ft.Text("No hay guías PDF subidas.", size=16, color=ft.Colors.RED)
             )
         else:
             filtro = filtro.lower()
             for archivo in archivos:
                 nombre_sin_ext = os.path.splitext(archivo)[0]
                 if filtro in nombre_sin_ext.lower():
+                    ruta_pdf = os.path.join(RUTA_PDFS, archivo)
+                    # Generar un nombre único para la miniatura usando hash
+                    hash_nombre = hashlib.md5(archivo.encode()).hexdigest()
+                    temp_path = os.path.join(tempfile.gettempdir(), f"{hash_nombre}_preview.png")
+                    # Si no existe la miniatura, créala
+                    if not os.path.exists(temp_path):
+                        try:
+                            imagen = convert_from_path(ruta_pdf, first_page=1, last_page=1, dpi=50)[0]
+                            imagen.save(temp_path, "PNG")
+                        except Exception as e:
+                            temp_path = None
+                    # Crear la tarjeta con miniatura
+                    miniatura = ft.Image(src=temp_path, width=60, height=80) if temp_path and os.path.exists(temp_path) else None
                     card = ft.Card(
                         content=ft.Container(
-                            content=ft.ListTile(
-                                title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
-                                on_click=lambda e, a=archivo: ver_guia(a)
+                            content=ft.Row([
+                                miniatura if miniatura else ft.Icon(ft.icons.PICTURE_AS_PDF, size=40),
+                                ft.ListTile(
+                                    title=ft.Text(nombre_sin_ext, size=18, weight="bold"),
+                                    on_click=lambda e, a=archivo: ver_pdf(a)
                             ),
+                            ], alignment=ft.MainAxisAlignment.START),
                             padding=20
                         ),
                         expand=True,
                     )
                     lista_tarjetas.controls.append(
-                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER, width=500,expand=True)
+                        ft.Row([card], alignment=ft.MainAxisAlignment.CENTER, width=500, expand=True)
                     )
         page.update()
 
-
-    def filtrar_guia(e):
+    def filtrar_pdf(e):
         filtro = e.control.value
         construir_tarjetas(filtro)
 
@@ -71,51 +88,108 @@ def pantalla_home(page: ft.Page):
         contenido_principal.content.controls.clear()
 
         search_bar = ft.SearchBar(
-            bar_hint_text="Buscar guía...",
-            view_hint_text="Escribe el nombre de la guía",
-            on_change=filtrar_guia,
+            bar_hint_text="Buscar guía PDF...",
+            view_hint_text="Escribe el nombre del PDF",
+            on_change=filtrar_pdf,
             controls=[],
             expand=True,
         )
 
-        titulo = ft.Text("Med Pearls", size=25, weight="bold", text_align=ft.TextAlign.CENTER)
+        titulo = ft.Text("Tus Guías PDF", size=25, weight="bold", text_align=ft.TextAlign.CENTER)
+
+        btn_subir = ft.ElevatedButton("Subir PDF", icon=ft.Icons.UPLOAD_FILE, on_click=subir_pdf)
 
         construir_tarjetas()
 
         contenido_principal.content.controls.extend([
             titulo,
             ft.Container(content=search_bar, padding=15, alignment=ft.alignment.center),
+            btn_subir,
             lista_tarjetas
         ])
         page.update()
 
-    def ver_guia(archivo_md):
-        seleccion_actual["archivo"] = archivo_md
-        seleccion_actual["contenido"] = leer_guia_md(archivo_md)
+    def subir_pdf(e):
+        file_picker.pick_files(allow_multiple=True, allowed_extensions=["pdf"])
 
+    def ver_pdf(nombre_pdf):
         contenido_principal.content.controls.clear()
+
+        ruta_pdf = os.path.join(RUTA_PDFS, nombre_pdf)
+
+        # Intentamos obtener el total de páginas
+        try:
+            reader = PdfReader(ruta_pdf)
+            total_paginas = len(reader.pages)
+        except Exception as e:
+            contenido_principal.content.controls.append(
+                ft.Text(f"No se pudo leer el PDF: {e}", color=ft.Colors.RED)
+            )
+            page.update()
+            return
+
+        pagina_actual = {"index": 0}
+        imagen_mostrada = ft.Ref[ft.Image]()
+        indice_pagina = ft.Ref[ft.Text]()
+
+        def render_pagina(index):
+            try:
+                # Convertir solo una página del PDF
+                imagen = convert_from_path(ruta_pdf, first_page=index+1, last_page=index+1, dpi=150)[0]
+                temp_path = os.path.join(tempfile.gettempdir(), f"{nombre_pdf}_pagina_{index}.png")
+                imagen.save(temp_path, "PNG")
+                imagen_mostrada.current.src = temp_path
+                indice_pagina.current.value = f"Página {index + 1} de {total_paginas}"
+                page.update()
+            except Exception as e:
+                imagen_mostrada.current.src = ""
+                indice_pagina.current.value = f"Error cargando página: {e}"
+                page.update()
+
+        def siguiente(e):
+            if pagina_actual["index"] < total_paginas - 1:
+                pagina_actual["index"] += 1
+                render_pagina(pagina_actual["index"])
+
+        def anterior(e):
+            if pagina_actual["index"] > 0:
+                pagina_actual["index"] -= 1
+                render_pagina(pagina_actual["index"])
+
         titulo = ft.Text(
-            os.path.splitext(archivo_md)[0],
+            os.path.splitext(nombre_pdf)[0],
             size=20,
             weight="bold",
             text_align=ft.TextAlign.CENTER
         )
-        md = ft.Markdown(seleccion_actual["contenido"], expand=True)
 
-        contenedor_md = ft.Container(
-            content=md,
-            padding=ft.padding.all(20),
-            width=700,
-            expand=True,
+        imagen = ft.Image(ref=imagen_mostrada, fit=ft.ImageFit.CONTAIN, width=page.width * 0.9)
+
+        imagen_interactiva = ft.InteractiveViewer(
+            content=imagen,
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            min_scale=1.0,
+            max_scale=5.0
         )
+
+        pagina_info = ft.Text(ref=indice_pagina)
+
+        botones_nav = ft.Row([
+            ft.ElevatedButton("Anterior", on_click=anterior),
+            pagina_info,
+            ft.ElevatedButton("Siguiente", on_click=siguiente)
+        ], alignment=ft.MainAxisAlignment.CENTER)
 
         btn_volver = ft.ElevatedButton("Volver a la lista", on_click=lambda e: mostrar_lista())
 
         contenido_principal.content.controls.extend([
             titulo,
-            contenedor_md,
-            ft.Row([btn_volver], alignment=ft.MainAxisAlignment.CENTER)
+            imagen_interactiva,
+            botones_nav,
+            btn_volver
         ])
+
+        render_pagina(pagina_actual["index"])  # Mostrar primera página
         page.update()
 
     mostrar_lista()
